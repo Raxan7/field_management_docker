@@ -1,0 +1,168 @@
+{% extends 'field_app/base.html' %}
+
+{% block title %}Chagua Mkoa - Taifa{% endblock %}
+
+{% block content %}
+<!-- Tailwind CSS CDN -->
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<style>
+    /* Custom styles for enhanced visual appeal */
+    body, html {
+        height: 100%;
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background: url('/static/images/tanzania_map_background.png') no-repeat center center fixed;
+        background-size: cover;
+        color: #fff;
+        overflow-x: hidden;
+        position: relative;
+        z-index: 0;
+    }
+
+    /* Gradient overlay inspired by Tanzanian flag colors */
+    .background-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(0, 128, 0, 0.6), rgba(0, 0, 0, 0.7), rgba(255, 215, 0, 0.5));
+        z-index: -1;
+    }
+
+    /* Card animations and hover effects */
+    .region-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.95);
+        border: 2px solid transparent;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+
+    .region-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+        border-color: #FFD700; /* Yellow from Tanzanian flag */
+    }
+
+    .region-card.pinned {
+        background-color: rgba(220, 220, 220, 0.9);
+        cursor: not-allowed;
+    }
+
+    .card-header {
+        background: linear-gradient(90deg, #008000, #0052cc); /* Green and Blue from Tanzanian flag */
+        color: white;
+        padding: 1rem;
+        text-align: center;
+        border-bottom: 2px solid rgba(255, 215, 0, 0.3); /* Yellow accent */
+    }
+
+    .card-body {
+        background-color: rgba(255, 255, 255, 0.98);
+        color: #1a202c;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .region-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #0052cc; /* Blue from Tanzanian flag */
+        transition: transform 0.3s ease;
+    }
+
+    .region-card:hover .region-icon {
+        transform: scale(1.1);
+    }
+
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
+    }
+
+    .badge-success:hover {
+        background-color: #006400; /* Darker green for hover */
+    }
+
+    .badge-danger:hover {
+        background-color: #8b0000; /* Darker red for hover */
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .region-card {
+            margin-bottom: 1rem;
+        }
+        .container {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<div class="background-overlay"></div>
+
+<div class="container mx-auto my-10 px-4">
+    <div class="text-center mb-8">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 animate__animated animate__fadeIn">
+            Chagua Mkoa Wako
+        </h1>
+        <p class="text-lg md:text-xl text-yellow-200 mb-6 animate__animated animate__fadeIn animate__delay-1s">
+            Anzisha safari yako ya utafiti wa kiwango cha juu
+        </p>
+        <div class="border-t-4 border-yellow-400 w-32 mx-auto mb-8"></div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for region in regions %}
+        <div class="region-card {% if region.is_pinned %}pinned{% endif %} shadow-xl">
+            {% if region.is_pinned %}
+                <div class="card-header">
+                    <h3 class="text-lg font-semibold">{{ region.name }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="region-icon mx-auto mb-4">
+                        <i class="fas fa-lock fa-2x text-white"></i>
+                    </div>
+                    <p class="text-gray-600">Mkoa huu umefungwa kwa sasa (📌 pinned)</p>
+                </div>
+                <div class="card-footer p-4 text-center">
+                    <span class="badge bg-red-600 text-white badge-danger">
+                        <i class="fas fa-ban mr-1"></i> Haipatikani
+                    </span>
+                </div>
+            {% else %}
+                <a href="{% url 'select_district' region.id %}" class="block">
+                    <div class="card-header">
+                        <h3 class="text-lg font-semibold">{{ region.name }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="region-icon mx-auto mb-4">
+                            <i class="fas fa-globe-africa fa-2x text-white"></i>
+                        </div>
+                        <p class="text-gray-600">Bonyeza kuchagua na kuendelea</p>
+                    </div>
+                    <div class="card-footer p-4 text-center">
+                        <span class="badge bg-green-600 text-white badge-success">
+                            <i class="fas fa-arrow-right mr-1"></i> Endelea
+                        </span>
+                    </div>
+                </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Font Awesome and Animate.css CDNs for icons and animations -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+{% endblock %}

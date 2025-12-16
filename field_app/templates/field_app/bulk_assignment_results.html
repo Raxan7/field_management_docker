@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Assignment Results | Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --success-color: #00cec9;
+            --warning-color: #fd79a8;
+            --info-color: #74b9ff;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .results-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border: none;
+            overflow: hidden;
+        }
+        
+        .success-badge {
+            background: var(--success-color);
+            color: white;
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 14px;
+        }
+        
+        .warning-badge {
+            background: var(--warning-color);
+            color: white;
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 14px;
+        }
+        
+        .info-badge {
+            background: var(--info-color);
+            color: white;
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 14px;
+        }
+        
+        .email-row {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #6c5ce7;
+        }
+        
+        .summary-card {
+            border-radius: 15px;
+            color: white;
+            border: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .credential-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .school-list {
+            background: #e8f4f8;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="results-card p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(45deg, #00cec9, #81ecec); border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-check-circle fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h1 class="h2 fw-bold mb-1">📊 Bulk Assignment Results</h1>
+                            <p class="text-muted mb-0">Summary of assessor assignments and email notifications</p>
+                        </div>
+                        <div class="ms-3">
+                            <a href="{% url 'bulk_assign_assessors' %}" class="btn btn-outline-primary px-4 py-2 rounded-pill">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Assignment
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Summary Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="summary-card" style="background: linear-gradient(45deg, #00cec9, #81ecec);">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="display-6 fw-bold mb-2">{{ results.assignments_created }}</h2>
+                                <p class="mb-0 opacity-90">
+                                    <i class="fas fa-tasks me-2"></i>Assignments Created
+                                </p>
+                            </div>
+                            <i class="fas fa-clipboard-check fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-card" style="background: linear-gradient(45deg, #6c5ce7, #a29bfe);">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="display-6 fw-bold mb-2">{{ results.total_assessors }}</h2>
+                                <p class="mb-0 opacity-90">
+                                    <i class="fas fa-user-tie me-2"></i>Assessors
+                                </p>
+                            </div>
+                            <i class="fas fa-users fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-card" style="background: linear-gradient(45deg, #fd79a8, #fab1a0);">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="display-6 fw-bold mb-2">{{ results.total_schools }}</h2>
+                                <p class="mb-0 opacity-90">
+                                    <i class="fas fa-school me-2"></i>Schools
+                                </p>
+                            </div>
+                            <i class="fas fa-university fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-card" style="background: linear-gradient(45deg, #55efc4, #74b9ff);">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="display-6 fw-bold mb-2">{{ results.date }}</h2>
+                                <p class="mb-0 opacity-90">
+                                    <i class="fas fa-calendar-alt me-2"></i>Assessment Date
+                                </p>
+                            </div>
+                            <i class="fas fa-calendar-check fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Email Results -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="results-card p-4">
+                    <h3 class="fw-bold mb-4">
+                        <i class="fas fa-envelope me-2"></i>Email Notification Results
+                        <span class="badge bg-primary ms-2">{{ results.email_results|length }} assessors</span>
+                    </h3>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Assessor Name</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Schools Assigned</th>
+                                    <th>New Account</th>
+                                    <th>Credentials</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for email in results.email_results %}
+                                <tr class="{% if '✅' in email.status %}table-success{% elif '❌' in email.status %}table-danger{% else %}table-warning{% endif %}">
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <strong>{{ email.assessor }}</strong>
+                                        {% if email.is_new %}
+                                        <span class="badge bg-success ms-2">New</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ email.email|default:"No email" }}</td>
+                                    <td>
+                                        {% if '✅' in email.status %}
+                                        <span class="success-badge">
+                                            <i class="fas fa-check-circle me-1"></i> Sent
+                                        </span>
+                                        {% elif '❌' in email.status %}
+                                        <span class="warning-badge">
+                                            <i class="fas fa-exclamation-circle me-1"></i> Failed
+                                        </span>
+                                        {% else %}
+                                        <span class="info-badge">
+                                            <i class="fas fa-info-circle me-1"></i> Info
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if email.schools %}
+                                        <span class="badge bg-info">{{ email.schools|length }} schools</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">No schools</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if email.is_new %}
+                                        <i class="fas fa-check text-success"></i> Yes
+                                        {% else %}
+                                        <i class="fas fa-times text-secondary"></i> No
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if email.temp_password %}
+                                        <button class="btn btn-sm btn-outline-primary" onclick="showPassword('{{ email.email }}', '{{ email.temp_password }}')">
+                                            <i class="fas fa-key me-1"></i>Show Password
+                                        </button>
+                                        {% elif email.is_new %}
+                                        <span class="text-muted">No password</span>
+                                        {% else %}
+                                        <span class="text-success">Existing account</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                
+                                <!-- School list for this assessor -->
+                                {% if email.schools %}
+                                <tr>
+                                    <td colspan="7">
+                                        <div class="school-list">
+                                            <strong><i class="fas fa-school me-2"></i>Assigned Schools:</strong>
+                                            <div class="mt-2">
+                                                {% for school in email.schools %}
+                                                <span class="badge bg-light text-dark me-2 mb-1">{{ school }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                
+                                <!-- Password modal trigger -->
+                                {% if email.temp_password %}
+                                <div class="modal fade" id="passwordModal{{ forloop.counter }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Credentials for {{ email.assessor }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="credential-box">
+                                                    <h6><i class="fas fa-user me-2"></i>Assessor Details</h6>
+                                                    <p class="mb-1"><strong>Name:</strong> {{ email.assessor }}</p>
+                                                    <p class="mb-1"><strong>Email:</strong> {{ email.email }}</p>
+                                                    <p class="mb-1"><strong>Temporary Password:</strong></p>
+                                                    <div class="input-group mb-3">
+                                                        <input type="text" class="form-control" id="passwordField{{ forloop.counter }}" value="{{ email.temp_password }}" readonly>
+                                                        <button class="btn btn-outline-secondary" type="button" onclick="copyPassword('passwordField{{ forloop.counter }}')">
+                                                            <i class="fas fa-copy"></i>
+                                                        </button>
+                                                    </div>
+                                                    <small class="text-danger">
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                                        Copy this password and share it securely with the assessor.
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                                        <h5>No email results</h5>
+                                        <p>No emails were sent during this assignment</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="row">
+            <div class="col-12">
+                <div class="results-card p-4">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary px-4 py-2 rounded-pill">
+                                <i class="fas fa-home me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                        <div>
+                            <a href="{% url 'assessor_list' %}" class="btn btn-primary px-4 py-2 rounded-pill">
+                                <i class="fas fa-list me-2"></i>View All Assessors
+                            </a>
+                            <a href="{% url 'bulk_assign_assessors' %}" class="btn btn-success px-4 py-2 rounded-pill ms-2">
+                                <i class="fas fa-plus me-2"></i>New Assignment
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary Notes -->
+                    <div class="mt-4 p-3 rounded" style="background: #e8f4f8;">
+                        <h6><i class="fas fa-info-circle me-2"></i>Important Notes:</h6>
+                        <ul class="mb-0">
+                            <li>Assessors with new accounts need to be informed about their temporary passwords</li>
+                            <li>Failed email notifications should be investigated and resent if necessary</li>
+                            <li>All assessors can now access their assigned schools through the assessor login portal</li>
+                            <li>Each assessor can view all their assigned schools from their dashboard</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Display Modal -->
+    <div class="modal fade" id="passwordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="passwordModalLabel">Assessor Credentials</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="credential-box">
+                        <h6 id="modalAssessorName"></h6>
+                        <p id="modalAssessorEmail"></p>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="modalPasswordField" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyPassword('modalPasswordField')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <small class="text-danger">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Share this password securely with the assessor.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showPassword(email, password) {
+            document.getElementById('modalAssessorName').innerHTML = `<i class="fas fa-user me-2"></i>${email}`;
+            document.getElementById('modalAssessorEmail').innerHTML = `<strong>Email:</strong> ${email}`;
+            document.getElementById('modalPasswordField').value = password;
+            
+            const modal = new bootstrap.Modal(document.getElementById('passwordModal'));
+            modal.show();
+        }
+        
+        function copyPassword(elementId) {
+            const copyText = document.getElementById(elementId);
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // For mobile devices
+            
+            navigator.clipboard.writeText(copyText.value)
+                .then(() => {
+                    const btn = copyText.nextElementSibling;
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-success');
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalHtml;
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-outline-secondary');
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+        }
+        
+        // Auto-hide alerts after 5 seconds
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

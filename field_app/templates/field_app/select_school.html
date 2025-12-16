@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% block title %}Chagua Shule{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            {% if district and district.region %}
+                <a href="{% url 'select_district' district.region.id %}" class="btn btn-outline-primary btn-sm rounded-pill">
+                    <i class="fas fa-arrow-left me-1"></i> Rudi kwenye Wilaya
+                </a>
+            {% else %}
+                <a href="{% url 'select_region' %}" class="btn btn-outline-primary btn-sm rounded-pill">
+                    <i class="fas fa-arrow-left me-1"></i> Rudi kwenye Mkoa
+                </a>
+            {% endif %}
+        </div>
+        <div class="text-center">
+            <h1 class="h3 fw-bold text-gradient-primary mb-0">📚 Chagua Shule</h1>
+            <p class="text-muted mb-0">Katika Wilaya ya {{ district.name }}</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-info rounded-pill px-3 py-2">
+                {{ available_schools_count }}/{{ total_schools }} Inapatikana
+            </span>
+        </div>
+    </div>
+
+    <div class="border-top border-2 border-primary opacity-25 my-4"></div>
+
+    <!-- 🔥 ONGEZA: Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white text-center p-3 rounded-4">
+                <h4 class="mb-0">{{ total_schools }}</h4>
+                <small>Jumla ya Shule</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white text-center p-3 rounded-4">
+                <h4 class="mb-0">{{ available_schools_count }}</h4>
+                <small>Zinazopatikana</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white text-center p-3 rounded-4">
+                <h4 class="mb-0">{{ pinned_schools_count }}</h4>
+                <small>Zisizopatikana</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary text-white text-center p-3 rounded-4">
+                <h4 class="mb-0">{{ full_schools_count }}</h4>
+                <small>Zilizojaa</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔍 Search & Level Filter Form -->
+    <form method="get" class="row g-2 align-items-center mb-4">
+        <div class="col-md-4">
+            <select name="level" class="form-select shadow-sm rounded-pill">
+                <option value="Primary" {% if selected_level == 'Primary' %}selected{% endif %}>Shule ya Msingi</option>
+                <option value="Secondary" {% if selected_level == 'Secondary' %}selected{% endif %}>Shule ya Sekondari</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <input type="text" name="q" value="{{ query }}" placeholder="Tafuta jina la shule..." class="form-control shadow-sm rounded-pill">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm">
+                Tafuta <i class="fas fa-search ms-1"></i>
+            </button>
+        </div>
+    </form>
+
+    <!-- 🔥 ONGEZA: Legend -->
+    <div class="alert alert-light border rounded-4 mb-4">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <span class="badge bg-success me-2">●</span> Inapatikana
+            </div>
+            <div class="col-md-4">
+                <span class="badge bg-warning me-2">●</span> Haipatikani (Imezuiliwa)
+            </div>
+            <div class="col-md-4">
+                <span class="badge bg-secondary me-2">●</span> Imefikia Ujazo
+            </div>
+        </div>
+    </div>
+
+    <!-- 🏫 School Cards -->
+    <div class="row g-4">
+        {% for school in schools %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden hover-lift 
+                {% if school.is_pinned %}border-warning{% elif not school.is_selectable %}border-secondary{% else %}border-primary{% endif %}">
+                
+                <!-- 🔥 ONGEZA: Header color based on status -->
+                <div class="card-header text-white text-center py-3
+                    {% if school.is_pinned %}bg-warning
+                    {% elif not school.is_selectable %}bg-secondary
+                    {% else %}bg-gradient-primary{% endif %}">
+                    <h5 class="mb-0">{{ school.name }}</h5>
+                    <small>{{ school.get_level_display }}</small>
+                    
+                    <!-- 🔥 ONGEZA: Status badges -->
+                    {% if school.is_pinned %}
+                        <div class="mt-1">
+                            <span class="badge bg-danger">
+                                <i class="fas fa-ban me-1"></i>Haipatikani
+                            </span>
+                        </div>
+                    {% elif not school.is_selectable %}
+                        <div class="mt-1">
+                            <span class="badge bg-dark">
+                                <i class="fas fa-times-circle me-1"></i>Imefikia Ujazo
+                            </span>
+                        </div>
+                    {% else %}
+                        <div class="mt-1">
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i>Inapatikana
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-body">
+                    <p class="text-muted mb-2">
+                        Ujazo: <strong>{{ school.current_students }}</strong> / {{ school.capacity }}
+                    </p>
+                    <div class="progress mb-2" style="height: 6px;">
+                        <div class="progress-bar 
+                            {% if school.occupancy_percentage >= 90 %}bg-danger
+                            {% elif school.occupancy_percentage >= 70 %}bg-warning
+                            {% else %}bg-info{% endif %}" 
+                            role="progressbar" 
+                            style="width: {{ school.occupancy_percentage }}%;" 
+                            aria-valuenow="{{ school.occupancy_percentage }}" 
+                            aria-valuemin="0" 
+                            aria-valuemax="100">
+                        </div>
+                    </div>
+                    <p class="text-end text-muted small">{{ school.occupancy_percentage }}% ujazo</p>
+                    
+                    <!-- 🔥 ONGEZA: Show pin reason for pinned schools -->
+                    {% if school.is_pinned %}
+                    <div class="alert alert-warning py-2 mt-3 small">
+                        <strong><i class="fas fa-exclamation-triangle me-1"></i>Sababu:</strong><br>
+                        {{ school.pin_notes }}
+                        {% if school.problem_type %}
+                        <br><strong>Shida:</strong> {{ school.problem_type }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-footer bg-light border-0 py-3">
+                    {% if school.is_pinned %}
+                        <!-- 🔥 ONGEZA: Disabled button for pinned schools -->
+                        <button class="btn btn-warning rounded-pill w-100" disabled>
+                            <i class="fas fa-ban me-1"></i>Haipatikani Kwa Sasa
+                        </button>
+                        <small class="text-muted d-block text-center mt-1">
+                            Shule hii imezuiliwa kwa mafunzo ya uwanja
+                        </small>
+                    
+                    {% elif not school.is_selectable %}
+                        <!-- For full schools -->
+                        <button class="btn btn-secondary rounded-pill w-100" disabled>
+                            <i class="fas fa-times-circle me-1"></i>Imefikia Ujazo
+                        </button>
+                    
+                    {% else %}
+                        <!-- For available schools -->
+                        {% if not selected_school %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="school_id" value="{{ school.id }}">
+                            <input type="hidden" name="action" value="select">
+                            <button type="submit" class="btn btn-outline-primary rounded-pill w-100">
+                                <i class="fas fa-check-circle me-1"></i>Chagua Shule
+                            </button>
+                        </form>
+                        {% elif selected_school.id == school.id %}
+                        <div class="d-flex gap-2">
+                            <form method="post" class="w-50">
+                                {% csrf_token %}
+                                <input type="hidden" name="school_id" value="{{ school.id }}">
+                                <button name="action" value="confirm" class="btn btn-success rounded-pill w-100">
+                                    <i class="fas fa-check me-1"></i>Thibitisha
+                                </button>
+                            </form>
+                            <form method="post" class="w-50">
+                                {% csrf_token %}
+                                <input type="hidden" name="school_id" value="{{ school.id }}">
+                                <button name="action" value="cancel" class="btn btn-secondary rounded-pill w-100">
+                                    <i class="fas fa-times me-1"></i>Ghairi
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <button disabled class="btn btn-sm btn-outline-secondary rounded-pill w-100">
+                            <i class="fas fa-clock me-1"></i>Shule Nyingine Imechaguliwa
+                        </button>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not schools %}
+    <div class="card mt-5 border-0 shadow-sm text-center p-5">
+        <i class="fas fa-school fa-4x text-muted mb-4"></i>
+        <h3 class="text-secondary">Hakuna Shule Zilizopatikana</h3>
+        <p class="text-muted">Hakuna shule zilizopatikana kwenye utafutaji wako.</p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{% url 'select_school' district.id %}" class="btn btn-primary mt-3 rounded-pill">
+                <i class="fas fa-redo me-1"></i> Onyesha Zote
+            </a>
+            {% if district and district.region %}
+                <a href="{% url 'select_district' district.region.id %}" class="btn btn-outline-primary mt-3 rounded-pill">
+                    <i class="fas fa-arrow-left me-1"></i> Rudi kwenye Wilaya
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 🎨 Styling -->
+<style>
+    .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    }
+    .text-gradient-primary {
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .card {
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}

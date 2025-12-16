@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Assign Assessors | Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bulk-primary: #6c5ce7;
+            --bulk-secondary: #a29bfe;
+            --bulk-success: #00cec9;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .bulk-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(108, 92, 231, 0.1);
+            border: none;
+            overflow: hidden;
+        }
+        
+        .selection-panel {
+            border: 2px dashed #dfe6e9;
+            border-radius: 15px;
+            padding: 25px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .selection-panel:hover {
+            border-color: var(--bulk-primary);
+            background: rgba(108, 92, 231, 0.02);
+        }
+        
+        .checkbox-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background: white;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: block !important; /* FORCE SHOW ALL ITEMS */
+        }
+        
+        .checkbox-item:hover {
+            border-color: var(--bulk-primary);
+            background: rgba(108, 92, 231, 0.05);
+            transform: translateX(5px);
+        }
+        
+        .checkbox-item.selected {
+            border-color: var(--bulk-primary);
+            background: rgba(108, 92, 231, 0.1);
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--bulk-primary);
+            border-color: var(--bulk-primary);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(45deg, var(--bulk-primary), var(--bulk-secondary));
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(108, 92, 231, 0.3);
+            color: white;
+        }
+        
+        .stat-card-bulk {
+            border-radius: 15px;
+            color: white;
+            border: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card-bulk:hover {
+            transform: translateY(-5px);
+        }
+        
+        .date-picker {
+            border: 2px solid #dfe6e9;
+            border-radius: 10px;
+            padding: 12px 15px;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+        
+        .date-picker:focus {
+            border-color: var(--bulk-primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+        
+        .section-title {
+            color: var(--bulk-primary);
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--bulk-primary);
+        }
+        
+        .counter-badge {
+            background: var(--bulk-primary);
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .selected-count {
+            font-weight: 600;
+            color: var(--bulk-primary);
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .search-highlight {
+            background-color: #fff9c4 !important;
+            border-color: #ffd54f !important;
+            box-shadow: 0 0 8px rgba(255, 213, 79, 0.4);
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+            display: none;
+        }
+        
+        .search-wrapper {
+            position: relative;
+        }
+        
+        .clear-search {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .clear-search:hover {
+            color: var(--bulk-primary);
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0.5;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .pagination-controls {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        /* IMPORTANT: Ensure all items are visible by default */
+        #assessorsList .checkbox-item,
+        #schoolsList .checkbox-item {
+            display: block !important;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="bulk-card p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(45deg, var(--bulk-primary), var(--bulk-secondary)); border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-users-cog fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h1 class="h2 fw-bold mb-1">📋 Bulk Assign Assessors</h1>
+                            <p class="text-muted mb-0">Assign multiple assessors to multiple schools simultaneously</p>
+                            <!-- DEBUG INFO -->
+                            <div class="debug-info mt-2">
+                                <small>
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Showing: {{ all_assessors|length }} assessors | 
+                                    {{ all_schools|length }} schools (Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}) |
+                                    Search: <span id="searchStatus" class="text-success">Ready</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Warning Alert -->
+        {% if assessors_no_email %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-warning bulk-card">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                Assessors Without Email Addresses
+                            </h5>
+                            <p class="mb-2">
+                                The following {{ assessors_no_email|length }} assessor(s) don't have email addresses and won't receive notifications:
+                            </p>
+                            <div class="mb-2">
+                                {% for assessor in assessors_no_email %}
+                                <span class="badge bg-warning text-dark me-2 mb-1">
+                                    {{ assessor.full_name }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            <p class="mb-0">
+                                <small>
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Add email addresses in the 
+                                    <a href="{% url 'admin:field_app_assessor_changelist' %}" class="alert-link">Admin Panel</a> 
+                                    before assigning them to schools.
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Main Form -->
+        <div class="bulk-card p-4 mb-4">
+            <form method="post" id="bulkAssignForm">
+                {% csrf_token %}
+                
+                <div class="row g-4">
+                    <!-- Assessors Selection -->
+                    <div class="col-lg-6">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="section-title mb-0">
+                                <i class="fas fa-user-tie me-2"></i>Select Assessors
+                                <span class="counter-badge ms-2" id="assessorCount">0</span>
+                            </h3>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="selectAllAssessors">
+                                <label class="form-check-label" for="selectAllAssessors">
+                                    Select All ({{ all_assessors|length }})
+                                </label>
+                            </div>
+                        </div>
+                        <div class="selection-panel" id="assessorsPanel">
+                            <div class="search-wrapper mb-3">
+                                <input type="text" class="form-control" placeholder="🔍 Search assessors..." 
+                                       id="assessorSearch">
+                                <button type="button" class="clear-search" id="clearAssessorSearch" title="Clear search">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="form-group" id="assessorsList">
+                                {% if all_assessors %}
+                                    {% for assessor in all_assessors %}
+                                    <div class="checkbox-item assessor-item" data-name="{{ assessor.full_name|lower }}" data-email="{{ assessor.email|default:''|lower }}">
+                                        <div class="form-check">
+                                            <input class="form-check-input assessor-checkbox" 
+                                                   type="checkbox" 
+                                                   name="assessors" 
+                                                   value="{{ assessor.id }}"
+                                                   id="assessor_{{ assessor.id }}"
+                                                   data-assessor-id="{{ assessor.id }}"
+                                                   {% if not assessor.email %}disabled{% endif %}>
+                                            <label class="form-check-label" for="assessor_{{ assessor.id }}">
+                                                <strong class="assessor-name">{{ assessor.full_name }}</strong>
+                                                {% if not assessor.email %}
+                                                <span class="badge bg-warning ms-2" data-bs-toggle="tooltip" title="No email address">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                </span>
+                                                {% endif %}
+                                                <small class="text-muted d-block assessor-email">
+                                                    <i class="fas fa-envelope me-1"></i>
+                                                    {% if assessor.email %}
+                                                    {{ assessor.email|truncatechars:25 }}
+                                                    {% else %}
+                                                    <span class="text-danger">No email address</span>
+                                                    {% endif %}
+                                                </small>
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-phone me-1"></i>
+                                                    {{ assessor.phone_number|default:"No phone" }}
+                                                </small>
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-school me-1"></i>
+                                                    {{ assessor.schools_assigned|default:0 }} assigned school{{ assessor.schools_assigned|default:0|pluralize }}
+                                                </small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center text-muted py-4">
+                                        <i class="fas fa-user-tie fa-3x mb-3"></i>
+                                        <h5>No assessors available</h5>
+                                        <p>Add assessors in the admin panel first</p>
+                                        <a href="{% url 'admin:field_app_assessor_add' %}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-plus me-1"></i> Add Assessor
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div id="assessorNoResults" class="no-results">
+                                <i class="fas fa-search fa-2x mb-2"></i>
+                                <p>No assessors found matching your search</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Schools Selection -->
+                    <div class="col-lg-6">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="section-title mb-0">
+                                <i class="fas fa-school me-2"></i>Select Schools
+                                <span class="counter-badge ms-2" id="schoolCount">0</span>
+                            </h3>
+                            <div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="selectAllSchools">
+                                    <label class="form-check-label" for="selectAllSchools">
+                                        Select All on Page ({{ all_schools|length }})
+                                    </label>
+                                </div>
+                                <small class="text-muted d-block">
+                                    Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                </small>
+                                <small class="text-muted d-block">
+                                    Total: {{ page_obj.paginator.count }} schools in database
+                                </small>
+                            </div>
+                        </div>
+                        <div class="selection-panel" id="schoolsPanel">
+                            <div class="search-wrapper mb-3">
+                                <input type="text" class="form-control" placeholder="🔍 Search all {{ page_obj.paginator.count }} schools..." 
+                                       id="schoolSearch">
+                                <button type="button" class="clear-search" id="clearSchoolSearch" title="Clear search">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="form-group" id="schoolsList">
+                                {% if all_schools %}
+                                    {% for school in all_schools %}
+                                    <div class="checkbox-item school-item" data-name="{{ school.name|lower }}" data-district="{{ school.district.name|lower }}">
+                                        <div class="form-check">
+                                            <input class="form-check-input school-checkbox" 
+                                                   type="checkbox" 
+                                                   name="schools" 
+                                                   value="{{ school.id }}"
+                                                   id="school_{{ school.id }}">
+                                            <label class="form-check-label" for="school_{{ school.id }}">
+                                                <strong class="school-name">{{ school.name }}</strong>
+                                                <small class="text-muted d-block school-location">
+                                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                                    {{ school.district.name }}, {{ school.district.region.name }}
+                                                </small>
+                                                <small class="text-muted d-block school-students">
+                                                    <i class="fas fa-users me-1"></i>
+                                                    {{ school.current_students }}/{{ school.capacity }} students
+                                                </small>
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-user-tie me-1"></i>
+                                                    {{ school.assessors_count|default:0 }} assigned assessor{{ school.assessors_count|default:0|pluralize }}
+                                                </small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                    
+                                    <!-- Pagination -->
+                                    <nav aria-label="Schools pagination" class="mt-4 pagination-controls">
+                                        <ul class="pagination justify-content-center">
+                                            {% if page_obj.has_previous %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page=1" aria-label="First">
+                                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                                    </a>
+                                                </li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                                        <span aria-hidden="true">&laquo;</span>
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                            
+                                            {% for num in page_obj.paginator.page_range %}
+                                                {% if page_obj.number == num %}
+                                                    <li class="page-item active">
+                                                        <span class="page-link">{{ num }}</span>
+                                                    </li>
+                                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                            
+                                            {% if page_obj.has_next %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                                        <span aria-hidden="true">&raquo;</span>
+                                                    </a>
+                                                </li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                        <p class="text-center text-muted small">
+                                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} 
+                                            ({{ page_obj.paginator.count }} total schools)
+                                        </p>
+                                    </nav>
+                                {% else %}
+                                    <div class="text-center text-muted py-4">
+                                        <i class="fas fa-school fa-3x mb-3"></i>
+                                        <h5>No schools available</h5>
+                                        <p>Add schools in the admin panel first</p>
+                                        <a href="{% url 'admin:field_app_school_add' %}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-plus me-1"></i> Add School
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div id="schoolNoResults" class="no-results">
+                                <i class="fas fa-search fa-2x mb-2"></i>
+                                <p>No schools found matching your search</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Assessment Date -->
+                <div class="row mt-4">
+                    <div class="col-lg-6">
+                        <h3 class="section-title">
+                            <i class="fas fa-calendar-alt me-2"></i>Assessment Details
+                        </h3>
+                        <div class="p-4 rounded" style="background: #f8f9fa;">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-calendar-day me-2"></i>Assessment Date
+                                </label>
+                                <input type="date" name="assessment_date" class="date-picker" 
+                                       id="assessmentDate" value="{{ default_date }}" required>
+                                <small class="text-muted">The date when assessments should take place</small>
+                            </div>
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading mb-2">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    What happens next?
+                                </h6>
+                                <ul class="mb-0 small">
+                                    <li>Selected assessors will receive email notifications</li>
+                                    <li>New assessors without accounts will get auto-generated accounts</li>
+                                    <li>Credentials will be sent via email to each assessor</li>
+                                    <li>Each assessor can access all their assigned schools</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Assignment Summary -->
+                    <div class="col-lg-6">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-pie me-2"></i>Assignment Summary
+                        </h3>
+                        <div class="p-4 rounded" style="background: linear-gradient(45deg, rgba(108, 92, 231, 0.1), rgba(162, 155, 254, 0.1));">
+                            <h5 class="fw-bold mb-3">📊 Assignment Preview</h5>
+                            <div class="row text-center mb-3">
+                                <div class="col-6 mb-2">
+                                    <div class="border rounded p-2 bg-white">
+                                        <h4 class="fw-bold mb-1 text-primary" id="previewAssessors">0</h4>
+                                        <small class="text-muted">Assessors</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <div class="border rounded p-2 bg-white">
+                                        <h4 class="fw-bold mb-1 text-success" id="previewSchools">0</h4>
+                                        <small class="text-muted">Schools</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <p class="mb-2">
+                                    <i class="fas fa-calendar me-2"></i>
+                                    Date: <strong id="previewDate">{{ default_date|date:"F d, Y" }}</strong>
+                                </p>
+                                <p class="mb-0">
+                                    <i class="fas fa-users me-2"></i>
+                                    Total assignments to create: 
+                                    <strong class="fs-5" id="totalAssignments">0</strong>
+                                </p>
+                                <small class="text-muted">
+                                    (Assessors × Schools = Total assignments)
+                                </small>
+                            </div>
+                            <div class="alert alert-warning mt-3" id="noEmailWarning" style="display: none;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <span id="noEmailCount">0</span> assessor(s) without email addresses selected.
+                                They won't receive notifications.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary px-4 py-2 rounded-pill">
+                                    <i class="fas fa-arrow-left me-2"></i>Cancel
+                                </a>
+                            </div>
+                            <div>
+                                <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                                    <i class="fas fa-user-check me-2"></i>
+                                    Assign Assessors to Schools
+                                    <span class="badge bg-white text-primary ms-2" id="submitCount">0</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="stat-card-bulk" style="background: linear-gradient(45deg, #6c5ce7, #a29bfe);">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="display-6 fw-bold mb-2">{{ total_assessors }}</h2>
+                                <p class="mb-0 opacity-90">
+                                    <i class="fas fa-user-tie me-2"></i>Total Assessors
+                                </p>
+                            </div>
+                            <i class="fas fa-chalkboard-teacher fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card-bulk" style="background: linear-gradient(45deg, #00cec9, #81ecec);">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="display-6 fw-bold mb-2">{{ total_schools }}</h2>
+                                <p class="mb-0 opacity-90">
+                                    <i class="fas fa-school me-2"></i>Total Schools
+                                </p>
+                            </div>
+                            <i class="fas fa-university fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card-bulk" style="background: linear-gradient(45deg, #fd79a8, #fab1a0);">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="display-6 fw-bold mb-2">{{ total_approved_students }}</h2>
+                                <p class="mb-0 opacity-90">
+                                    <i class="fas fa-graduation-cap me-2"></i>Approved Students
+                                </p>
+                            </div>
+                            <i class="fas fa-user-graduate fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card-bulk" style="background: linear-gradient(45deg, #55efc4, #74b9ff);">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="display-6 fw-bold mb-2" id="availableAssessors">{{ available_assessors }}</h2>
+                                <p class="mb-0 opacity-90">
+                                    <i class="fas fa-check-circle me-2"></i>Available (with email)
+                                </p>
+                            </div>
+                            <i class="fas fa-envelope fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Initialize variables
+    let selectedAssessorIds = new Set();
+    let selectedSchoolIds = new Set();
+    let assessorsData = {};
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("🔄 Initializing bulk assign form...");
+        
+        // IMPORTANT: Make sure ALL items are visible by default
+        const allItems = document.querySelectorAll('.checkbox-item');
+        console.log(`Found ${allItems.length} checkbox items in total`);
+        
+        allItems.forEach(item => {
+            item.style.display = 'block';
+            item.style.visibility = 'visible';
+            item.style.opacity = '1';
+        });
+        
+        // Collect all assessor data from checkboxes
+        document.querySelectorAll('.assessor-checkbox').forEach(checkbox => {
+            const id = parseInt(checkbox.value);
+            const hasEmail = !checkbox.disabled;
+            const item = checkbox.closest('.checkbox-item');
+            const nameElement = item.querySelector('strong');
+            
+            assessorsData[id] = {
+                name: nameElement ? nameElement.textContent : `Assessor ${id}`,
+                hasEmail: hasEmail
+            };
+        });
+        
+        console.log(`✅ Loaded ${Object.keys(assessorsData).length} assessors`);
+        console.log(`✅ Found ${document.querySelectorAll('.school-checkbox').length} school checkboxes on this page`);
+        
+        // Set up date
+        updateDatePreview();
+        
+        // Select all assessors
+        const selectAllAssessors = document.getElementById('selectAllAssessors');
+        if (selectAllAssessors) {
+            selectAllAssessors.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.assessor-checkbox:not(:disabled)');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                    const id = parseInt(checkbox.value);
+                    if (this.checked) {
+                        selectedAssessorIds.add(id);
+                    } else {
+                        selectedAssessorIds.delete(id);
+                    }
+                });
+                updateCounters();
+            });
+        }
+        
+        // Select all schools
+        const selectAllSchools = document.getElementById('selectAllSchools');
+        if (selectAllSchools) {
+            selectAllSchools.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.school-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                    const id = parseInt(checkbox.value);
+                    if (this.checked) {
+                        selectedSchoolIds.add(id);
+                    } else {
+                        selectedSchoolIds.delete(id);
+                    }
+                });
+                updateCounters();
+            });
+        }
+        
+        // Individual checkbox changes
+        document.querySelectorAll('.assessor-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const id = parseInt(this.value);
+                if (this.checked) {
+                    selectedAssessorIds.add(id);
+                } else {
+                    selectedAssessorIds.delete(id);
+                    if (selectAllAssessors) {
+                        selectAllAssessors.checked = false;
+                    }
+                }
+                updateCounters();
+            });
+        });
+        
+        document.querySelectorAll('.school-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const id = parseInt(this.value);
+                if (this.checked) {
+                    selectedSchoolIds.add(id);
+                } else {
+                    selectedSchoolIds.delete(id);
+                    if (selectAllSchools) {
+                        selectAllSchools.checked = false;
+                    }
+                }
+                updateCounters();
+            });
+        });
+        
+        // Form submission validation
+        document.getElementById('bulkAssignForm').addEventListener('submit', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            submitBtn.disabled = true;
+            
+            return true;
+        });
+        
+        // Initialize counters
+        updateCounters();
+        
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Initialize search functionality - SIMPLE VERSION
+        initializeSimpleSearch();
+        
+        // Show initial counts
+        setTimeout(() => {
+            const assessorItems = document.querySelectorAll('.assessor-item');
+            const schoolItems = document.querySelectorAll('.school-item');
+            console.log(`Initial: ${assessorItems.length} assessors, ${schoolItems.length} schools visible`);
+            
+            // Update search status
+            updateSearchStatus(`Showing ${schoolItems.length} schools on this page`, false);
+        }, 100);
+    });
+    
+    // Update counters
+    function updateCounters() {
+        // Update count badges
+        const assessorCount = document.getElementById('assessorCount');
+        const schoolCount = document.getElementById('schoolCount');
+        const submitCount = document.getElementById('submitCount');
+        
+        if (assessorCount) assessorCount.textContent = selectedAssessorIds.size;
+        if (schoolCount) schoolCount.textContent = selectedSchoolIds.size;
+        if (submitCount) submitCount.textContent = selectedAssessorIds.size * selectedSchoolIds.size;
+        
+        // Update preview
+        const previewAssessors = document.getElementById('previewAssessors');
+        const previewSchools = document.getElementById('previewSchools');
+        const totalAssignments = document.getElementById('totalAssignments');
+        
+        if (previewAssessors) previewAssessors.textContent = selectedAssessorIds.size;
+        if (previewSchools) previewSchools.textContent = selectedSchoolIds.size;
+        if (totalAssignments) totalAssignments.textContent = selectedAssessorIds.size * selectedSchoolIds.size;
+        
+        // Count assessors without email
+        let noEmailCount = 0;
+        selectedAssessorIds.forEach(id => {
+            if (assessorsData[id] && !assessorsData[id].hasEmail) {
+                noEmailCount++;
+            }
+        });
+        
+        // Show/hide warning
+        const warningElement = document.getElementById('noEmailWarning');
+        if (warningElement) {
+            if (noEmailCount > 0) {
+                warningElement.style.display = 'block';
+                document.getElementById('noEmailCount').textContent = noEmailCount;
+            } else {
+                warningElement.style.display = 'none';
+            }
+        }
+        
+        // Update checkbox items style
+        document.querySelectorAll('.checkbox-item').forEach(item => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox && checkbox.checked) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+        
+        // Enable/disable submit button
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) {
+            if (selectedAssessorIds.size > 0 && selectedSchoolIds.size > 0) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+    }
+    
+    // SIMPLE SEARCH FUNCTIONALITY - THIS WILL WORK FOR SURE
+    function initializeSimpleSearch() {
+        console.log("🔍 Initializing SIMPLE search functionality...");
+        
+        // Assessor search
+        const assessorSearch = document.getElementById('assessorSearch');
+        const clearAssessorSearch = document.getElementById('clearAssessorSearch');
+        
+        if (assessorSearch) {
+            assessorSearch.addEventListener('input', function() {
+                simpleSearchAssessors();
+            });
+        }
+        
+        if (clearAssessorSearch) {
+            clearAssessorSearch.addEventListener('click', function() {
+                assessorSearch.value = '';
+                simpleSearchAssessors();
+                assessorSearch.focus();
+            });
+        }
+        
+        // School search
+        const schoolSearch = document.getElementById('schoolSearch');
+        const clearSchoolSearch = document.getElementById('clearSchoolSearch');
+        
+        if (schoolSearch) {
+            schoolSearch.addEventListener('input', function() {
+                simpleSearchSchools();
+            });
+        }
+        
+        if (clearSchoolSearch) {
+            clearSchoolSearch.addEventListener('click', function() {
+                schoolSearch.value = '';
+                simpleSearchSchools();
+                schoolSearch.focus();
+            });
+        }
+        
+        console.log("✅ Simple search functionality initialized");
+    }
+    
+    // SIMPLE SEARCH FOR ASSESSORS
+    function simpleSearchAssessors() {
+        const searchInput = document.getElementById('assessorSearch');
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const items = document.querySelectorAll('.assessor-item');
+        const noResultsElement = document.getElementById('assessorNoResults');
+        
+        let visibleCount = 0;
+        
+        items.forEach(item => {
+            // Get all text from the item
+            const name = item.querySelector('.assessor-name')?.textContent?.toLowerCase() || '';
+            const email = item.querySelector('.assessor-email')?.textContent?.toLowerCase() || '';
+            const allText = item.textContent.toLowerCase();
+            
+            // Check if matches search term
+            const matches = searchTerm === '' || 
+                          name.includes(searchTerm) || 
+                          email.includes(searchTerm) ||
+                          allText.includes(searchTerm);
+            
+            if (matches) {
+                item.style.display = 'block';
+                visibleCount++;
+                
+                // Simple highlight - just change background
+                if (searchTerm) {
+                    item.style.backgroundColor = '#fff9c4';
+                    item.style.borderColor = '#ffd54f';
+                } else {
+                    item.style.backgroundColor = '';
+                    item.style.borderColor = '';
+                }
+            } else {
+                item.style.display = 'none';
+                item.style.backgroundColor = '';
+                item.style.borderColor = '';
+            }
+        });
+        
+        // Show/hide no results message
+        if (noResultsElement) {
+            if (visibleCount === 0 && searchTerm !== '') {
+                noResultsElement.style.display = 'block';
+            } else {
+                noResultsElement.style.display = 'none';
+            }
+        }
+        
+        // Update assessor count display
+        const assessorCount = document.getElementById('assessorCount');
+        if (assessorCount) {
+            if (searchTerm !== '') {
+                assessorCount.textContent = `${visibleCount}/${items.length}`;
+            } else {
+                assessorCount.textContent = selectedAssessorIds.size;
+            }
+        }
+        
+        // Update search status
+        updateSearchStatus(`Found ${visibleCount} assessors`, false);
+        
+        console.log(`🔍 Assessor search: "${searchTerm}" → ${visibleCount} results`);
+    }
+    
+    // SIMPLE SEARCH FOR SCHOOLS
+    function simpleSearchSchools() {
+        const searchInput = document.getElementById('schoolSearch');
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const items = document.querySelectorAll('.school-item');
+        const noResultsElement = document.getElementById('schoolNoResults');
+        
+        let visibleCount = 0;
+        
+        items.forEach(item => {
+            // Get all text from the item
+            const name = item.querySelector('.school-name')?.textContent?.toLowerCase() || '';
+            const location = item.querySelector('.school-location')?.textContent?.toLowerCase() || '';
+            const students = item.querySelector('.school-students')?.textContent?.toLowerCase() || '';
+            const allText = item.textContent.toLowerCase();
+            
+            // Check if matches search term
+            const matches = searchTerm === '' || 
+                          name.includes(searchTerm) || 
+                          location.includes(searchTerm) ||
+                          students.includes(searchTerm) ||
+                          allText.includes(searchTerm);
+            
+            if (matches) {
+                item.style.display = 'block';
+                visibleCount++;
+                
+                // Simple highlight
+                if (searchTerm) {
+                    item.style.backgroundColor = '#fff9c4';
+                    item.style.borderColor = '#ffd54f';
+                } else {
+                    item.style.backgroundColor = '';
+                    item.style.borderColor = '';
+                }
+            } else {
+                item.style.display = 'none';
+                item.style.backgroundColor = '';
+                item.style.borderColor = '';
+            }
+        });
+        
+        // Show/hide no results message
+        if (noResultsElement) {
+            if (visibleCount === 0 && searchTerm !== '') {
+                noResultsElement.style.display = 'block';
+            } else {
+                noResultsElement.style.display = 'none';
+            }
+        }
+        
+        // Update school count display
+        const schoolCount = document.getElementById('schoolCount');
+        if (schoolCount) {
+            if (searchTerm !== '') {
+                schoolCount.textContent = `${visibleCount}/${items.length}`;
+            } else {
+                schoolCount.textContent = selectedSchoolIds.size;
+            }
+        }
+        
+        // Update search status
+        updateSearchStatus(`Found ${visibleCount} schools`, false);
+        
+        console.log(`🔍 School search: "${searchTerm}" → ${visibleCount} results`);
+    }
+    
+    // Update date preview
+    function updateDatePreview() {
+        const dateInput = document.getElementById('assessmentDate');
+        const previewDate = document.getElementById('previewDate');
+        
+        if (dateInput && previewDate && dateInput.value) {
+            const date = new Date(dateInput.value);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            previewDate.textContent = date.toLocaleDateString('en-US', options);
+        }
+    }
+    
+    // Validate form
+    function validateForm() {
+        if (selectedAssessorIds.size === 0) {
+            alert('Please select at least one assessor.');
+            return false;
+        }
+        
+        if (selectedSchoolIds.size === 0) {
+            alert('Please select at least one school.');
+            return false;
+        }
+        
+        // Check for assessors without email
+        let assessorsWithoutEmail = [];
+        selectedAssessorIds.forEach(id => {
+            if (assessorsData[id] && !assessorsData[id].hasEmail) {
+                assessorsWithoutEmail.push(assessorsData[id].name);
+            }
+        });
+        
+        if (assessorsWithoutEmail.length > 0) {
+            return confirm(
+                `${assessorsWithoutEmail.length} assessor(s) don't have email addresses:\n\n` +
+                `${assessorsWithoutEmail.join(', ')}\n\n` +
+                `They won't receive email notifications. Continue anyway?`
+            );
+        }
+        
+        // Confirm large assignments
+        const totalAssignments = selectedAssessorIds.size * selectedSchoolIds.size;
+        if (totalAssignments > 100) {
+            return confirm(
+                `You are about to create ${totalAssignments} assignments.\n` +
+                `This may take a few moments. Continue?`
+            );
+        }
+        
+        return true;
+    }
+    
+    // Initialize date preview
+    const assessmentDate = document.getElementById('assessmentDate');
+    if (assessmentDate) {
+        assessmentDate.addEventListener('change', updateDatePreview);
+    }
+    
+    // Update search status
+    function updateSearchStatus(message, isError = false) {
+        const statusElement = document.getElementById('searchStatus');
+        if (statusElement) {
+            statusElement.textContent = message;
+            statusElement.className = isError ? 'text-danger' : 'text-success';
+        }
+    }
+    
+    // FORCE SHOW ALL ITEMS ON LOAD
+    window.onload = function() {
+        console.log("📋 FORCING all items to be visible...");
+        
+        // Select all assessor and school items
+        const allAssessorItems = document.querySelectorAll('.assessor-item');
+        const allSchoolItems = document.querySelectorAll('.school-item');
+        
+        // Make them visible
+        allAssessorItems.forEach(item => {
+            item.style.display = 'block';
+            item.style.visibility = 'visible';
+            item.style.opacity = '1';
+        });
+        
+        allSchoolItems.forEach(item => {
+            item.style.display = 'block';
+            item.style.visibility = 'visible';
+            item.style.opacity = '1';
+        });
+        
+        console.log(`✅ Forced ${allAssessorItems.length} assessors and ${allSchoolItems.length} schools to be visible`);
+        
+        // Run initial searches
+        simpleSearchAssessors();
+        simpleSearchSchools();
+    };
+</script>
+</body>
+</html>

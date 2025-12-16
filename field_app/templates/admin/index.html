@@ -1,0 +1,132 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+<!-- Dashboard Widget -->
+<div class="dashboard-widget" style="
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    border: 1px solid #eaeaea;
+">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+        <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                <div style="
+                    width: 50px;
+                    height: 50px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 22px;
+                ">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; color: #2c3e50;">Advanced Dashboard</h3>
+                    <p style="margin: 5px 0 0 0; color: #7f8c8d;">Access detailed analytics and reports</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px;">
+                <div class="feature-badge" style="
+                    background: #e8f4fc;
+                    padding: 8px 15px;
+                    border-radius: 20px;
+                    font-size: 13px;
+                    color: #2980b9;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                ">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </div>
+                <div class="feature-badge" style="
+                    background: #f0f8ff;
+                    padding: 8px 15px;
+                    border-radius: 20px;
+                    font-size: 13px;
+                    color: #9b59b6;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                ">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                </div>
+                <div class="feature-badge" style="
+                    background: #f9f0ff;
+                    padding: 8px 15px;
+                    border-radius: 20px;
+                    font-size: 13px;
+                    color: #8e44ad;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                ">
+                    <i class="fas fa-cogs"></i>
+                    <span>Settings</span>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 10px; min-width: 200px;">
+            <a href="{% url 'admin_dashboard' %}" class="primary-dashboard-btn" style="
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 12px 25px;
+                border-radius: 8px;
+                text-decoration: none;
+                text-align: center;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                transition: all 0.3s ease;
+            ">
+                <i class="fas fa-external-link-alt"></i>
+                <span>Open Dashboard</span>
+            </a>
+            
+            <a href="{% url 'admin_dashboard' %}?view=quick" class="secondary-btn" style="
+                background: white;
+                color: #667eea;
+                padding: 10px 20px;
+                border-radius: 8px;
+                text-decoration: none;
+                text-align: center;
+                font-weight: 500;
+                border: 2px solid #667eea;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                transition: all 0.3s ease;
+            ">
+                <i class="fas fa-bolt"></i>
+                <span>Quick View</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .primary-dashboard-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .secondary-btn:hover {
+        background: #f8f9ff;
+        transform: translateY(-1px);
+    }
+</style>
+
+{{ block.super }}
+{% endblock %}

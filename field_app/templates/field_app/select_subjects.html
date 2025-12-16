@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: green; padding: 4rem 1rem;">
+
+  <div style="width: 100%; max-width: 800px; background-color: rgba(255,255,255,0.8); border: 2px solid black; border-radius: 1.5rem; padding: 2.5rem;" class="shadow-lg animate-fade-in">
+
+    <h2 style="font-size: 2.5rem;" class="fw-bold text-center text-dark mb-4">
+      Chagua Somo la Kufundisha kwa <span class="text-primary">{{ school.name }}</span>
+    </h2>
+
+    <!-- Messages -->
+    {% if messages %}
+      <div class="mb-4">
+        {% for message in messages %}
+          <div class="p-3 rounded border-start border-4 mb-2
+            {% if message.tags == 'error' %}bg-danger text-white border-danger
+            {% elif message.tags == 'success' %}bg-success text-white border-success
+            {% elif message.tags == 'info' %}bg-info text-white border-info
+            {% else %}bg-secondary text-white border-dark
+            {% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- 🔥 REKEBISHO: Onyesha Maombi Yaliyopo -->
+    {% if all_applications %}
+    <div class="mb-4 p-3 bg-light rounded border">
+      <h4 class="fw-bold text-dark mb-3">📋 Maombi Yako:</h4>
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm">
+          <thead class="table-dark">
+            <tr>
+              <th>Somo</th>
+              <th>Hali</th>
+              <th>Tarehe</th>
+              <th>Vitendo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for application in all_applications %}
+            <tr>
+              <td class="fw-bold">{{ application.subject.name }}</td>
+              <td>
+                {% if application.status == 'approved' %}
+                  <span class="badge bg-success">✅ Imethibitishwa</span>
+                {% elif application.status == 'pending' %}
+                  <span class="badge bg-warning">⏳ Inasubiri</span>
+                {% else %}
+                  <span class="badge bg-danger">❌ Imekataliwa</span>
+                {% endif %}
+              </td>
+              <td class="text-muted small">{{ application.application_date|date:"d/m/Y" }}</td>
+              <td>
+                {% if application.status == 'pending' %}
+                <form method="post" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="subject_id" value="{{ application.subject.id }}">
+                  <button type="submit" name="action" value="cancel_application" 
+                          class="btn btn-outline-danger btn-sm" 
+                          onclick="return confirm('Unahakika unataka kufuta ombi la {{ application.subject.name }}?')">
+                    🔥 Futua
+                  </button>
+                </form>
+                {% else %}
+                <span class="text-muted small">Haiwezi kufutwa</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 🔥 REKEBISHO: Fomu ya Kuomba Somo Jipya -->
+    <div class="border-top pt-4 mt-4">
+      <h4 class="fw-bold text-dark mb-3">➕ Omba Somo Jipya:</h4>
+      
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Dropdown ya Masomo Yanayopatikana -->
+        <div class="mb-4">
+          <label for="subject_id" class="form-label fw-bold text-dark">Chagua Somo</label>
+          <select id="subject_id" name="subject_id" required
+            class="form-select fw-semibold border-dark"
+            style="background-color: darkred; color: white; border-width: 2px;">
+            <option value="" disabled selected>--- Chagua Somo ---</option>
+            {% for sc in subject_capacities %}
+              <!-- 🔥 REKEBISHO: Ondoa masomo yaliyoombwa tayari -->
+              {% if sc.subject.id not in applied_subject_ids %}
+                <option value="{{ sc.subject.id }}">
+                  {{ sc.subject.name }} (Nafasi: {{ sc.current_students }}/{{ sc.max_students }})
+                </option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <div class="form-text text-dark">
+            💡 Chagua somo ambalo hujaomba tayari. Masomo yaliyo na "Nafasi: X/Y" yanaonyesha ujazo uliobaki.
+          </div>
+        </div>
+
+        <input type="hidden" name="action" value="apply" />
+
+        <button type="submit"
+          class="btn btn-dark w-100 fw-bold py-3">
+          📨 Wasilisha Ombi
+        </button>
+      </form>
+    </div>
+
+    <!-- 🔥 ONDOA: Sehemu ya "Masomo Uliyoyachagua" kwa sasa -->
+    
+  </div>
+</div>
+
+<style>
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out;
+}
+</style>
+{% endblock %}

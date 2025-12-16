@@ -1,0 +1,272 @@
+{% extends 'field_app/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-book"></i>
+                        Logbook - {{ today_name }} ({{ today }})
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- 🔥 REKEBISHO: Location Verification Required -->
+                    <div class="card mb-4 border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Thibitisha Eneo Lako (LAZIMA)
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <strong>🔒 Maelekezo Muhimu:</strong>
+                                <ul class="mb-0">
+                                    <li>Lazima ushike eneo lako halisi kabla ya kujaza logbook</li>
+                                    <li>Eneo lako litumika kuthibitisha kuwa upo shuleni/unafanya kazi</li>
+                                    <li>Form ya logbook itafunguliwa tu baada ya eneo kuthibitishwa</li>
+                                </ul>
+                            </div>
+                            
+                            <div id="location-status" class="alert alert-warning">
+                                <i class="fas fa-lock me-2"></i> 
+                                <strong>Bado haujathibitisha eneo lako</strong>
+                                <br><small>Bonyeza "Thibitisha Eneo Lako" hapa chini</small>
+                            </div>
+                            
+                            <button type="button" id="get-location-btn" class="btn btn-success btn-lg mb-3">
+                                <i class="fas fa-location-arrow me-2"></i>Thibitisha Eneo Lako
+                            </button>
+                            
+                            <div id="location-details" class="mt-3" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Latitude:</strong> <span id="lat-display" class="badge bg-dark"></span></p>
+                                        <p><strong>Longitude:</strong> <span id="lng-display" class="badge bg-dark"></span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Anwani:</strong></p>
+                                        <p id="address-display" class="text-muted small"></p>
+                                    </div>
+                                </div>
+                                <div id="location-verification" class="mt-2">
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <strong>Eneo limehakikiwa!</strong> Sasa unaweza kujaza logbook.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hidden fields to store location data -->
+                            <input type="hidden" id="latitude" name="latitude">
+                            <input type="hidden" id="longitude" name="longitude">
+                            <input type="hidden" id="location_address" name="location_address">
+                            <input type="hidden" id="is_location_verified" name="is_location_verified" value="false">
+                        </div>
+                    </div>
+
+                    <!-- 🔥 REKEBISHO: Form imefungwa mpaka eneo lithibitishwe -->
+                    <div id="logbook-form-container" style="display: none;">
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Form imefunguliwa!</strong> Sasa unaweza kujaza logbook yako.
+                        </div>
+
+                        <form method="post" id="logbook-form">
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ form.morning_activity.label }}</label>
+                                        {{ form.morning_activity }}
+                                        {% if form.morning_activity.errors %}
+                                            <div class="text-danger">{{ form.morning_activity.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ form.afternoon_activity.label }}</label>
+                                        {{ form.afternoon_activity }}
+                                        {% if form.afternoon_activity.errors %}
+                                            <div class="text-danger">{{ form.afternoon_activity.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ form.challenges_faced.label }}</label>
+                                        {{ form.challenges_faced }}
+                                        {% if form.challenges_faced.errors %}
+                                            <div class="text-danger">{{ form.challenges_faced.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ form.lessons_learned.label }}</label>
+                                        {{ form.lessons_learned }}
+                                        {% if form.lessons_learned.errors %}
+                                            <div class="text-danger">{{ form.lessons_learned.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save"></i>
+                                    Hifadhi Logbook
+                                </button>
+                                <a href="{% url 'logbook_history' %}" class="btn btn-secondary">
+                                    <i class="fas fa-history"></i>
+                                    Angalia Historia
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 🔥 REKEBISHO: Display wakati form bado imefungwa -->
+                    <div id="form-locked-message" class="alert alert-warning">
+                        <i class="fas fa-lock me-2"></i>
+                        <strong>Form imefungwa</strong> - Hujaweza kujaza logbook kwa sababu bado haujathibitisha eneo lako.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const getLocationBtn = document.getElementById('get-location-btn');
+    const locationStatus = document.getElementById('location-status');
+    const locationDetails = document.getElementById('location-details');
+    const locationVerification = document.getElementById('location-verification');
+    const latDisplay = document.getElementById('lat-display');
+    const lngDisplay = document.getElementById('lng-display');
+    const addressDisplay = document.getElementById('address-display');
+    const latInput = document.getElementById('latitude');
+    const lngInput = document.getElementById('longitude');
+    const addressInput = document.getElementById('location_address');
+    const isVerifiedInput = document.getElementById('is_location_verified');
+    const logbookFormContainer = document.getElementById('logbook-form-container');
+    const formLockedMessage = document.getElementById('form-locked-message');
+
+    // 🔥 FUNCTION: Enable form if location is verified
+    function enableForm() {
+        logbookFormContainer.style.display = 'block';
+        formLockedMessage.style.display = 'none';
+        isVerifiedInput.value = 'true';
+        locationVerification.style.display = 'block';
+    }
+
+    getLocationBtn.addEventListener('click', function() {
+        locationStatus.className = 'alert alert-info';
+        locationStatus.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Inapata eneo lako... Tafadhali subiri';
+
+        if (!navigator.geolocation) {
+            locationStatus.className = 'alert alert-danger';
+            locationStatus.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>GPS haitumiki kwenye kivinjari chako.';
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                // Display the coordinates
+                latDisplay.textContent = lat.toFixed(6);
+                lngDisplay.textContent = lng.toFixed(6);
+                latInput.value = lat;
+                lngInput.value = lng;
+
+                // Use reverse geocoding to get address
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const address = data.display_name || 'Anwani haipatikani';
+                        addressDisplay.textContent = address;
+                        addressInput.value = address;
+
+                        // 🔥 VERIFICATION: Any location is acceptable now
+                        locationStatus.className = 'alert alert-success';
+                        locationStatus.innerHTML = '<i class="fas fa-check-circle me-2"></i>Eneo lako limethibitishwa!';
+                        
+                        // 🔥 ENABLE THE FORM
+                        enableForm();
+                        
+                        locationDetails.style.display = 'block';
+                    })
+                    .catch(error => {
+                        addressDisplay.textContent = 'Anwani haipatikani';
+                        addressInput.value = 'Anwani haipatikani';
+                        
+                        // Even if address fails, enable form as long as we have coordinates
+                        locationStatus.className = 'alert alert-success';
+                        locationStatus.innerHTML = '<i class="fas fa-check-circle me-2"></i>Eneo lako limethibitishwa!';
+                        
+                        // 🔥 ENABLE THE FORM
+                        enableForm();
+                        
+                        locationDetails.style.display = 'block';
+                    });
+            },
+            function(error) {
+                let message = '';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        message = 'Umekataa ruhusa ya eneo. Tafadhali ruhusu eneo ili uweze kujaza logbook.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        message = 'Taarifa za eneo hazipatikani. Hakikisha umezima kiwambo cha eneo.';
+                        break;
+                    case error.TIMEOUT:
+                        message = 'Muda wa kupata eneo umekwisha. Tafadhali jaribu tena.';
+                        break;
+                    default:
+                        message = 'Hitilafu isiyojulikana ilitokea.';
+                }
+                locationStatus.className = 'alert alert-danger';
+                locationStatus.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${message}`;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            }
+        );
+    });
+
+    // 🔥 VALIDATION: Prevent form submission if location not verified
+    document.getElementById('logbook-form').addEventListener('submit', function(e) {
+        if (isVerifiedInput.value !== 'true') {
+            e.preventDefault();
+            locationStatus.className = 'alert alert-danger';
+            locationStatus.innerHTML = 
+                '<i class="fas fa-exclamation-triangle me-2"></i>' +
+                '<strong>Haujathibitisha eneo lako!</strong>' +
+                '<br><small>Lazima uthibitishe eneo lako kwanza.</small>';
+            getLocationBtn.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});
+</script>
+{% endblock %}

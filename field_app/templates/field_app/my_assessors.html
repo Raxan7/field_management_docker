@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Assessors | {{ school.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --school-primary: #00b4db;
+            --school-secondary: #0083b0;
+            --assessor-card: #f8f9fa;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .school-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: none;
+            overflow: hidden;
+        }
+        
+        .assessor-card {
+            background: white;
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .assessor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .assessor-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--school-primary), var(--school-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+        
+        .contact-btn {
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .btn-email {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+        }
+        
+        .btn-email:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-call {
+            background: linear-gradient(45deg, #00b09b, #96c93d);
+            color: white;
+            border: none;
+        }
+        
+        .btn-call:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 176, 155, 0.3);
+        }
+        
+        .back-btn {
+            background: white;
+            color: var(--school-primary);
+            border: 2px solid var(--school-primary);
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: var(--school-primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .info-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .school-badge {
+            background: linear-gradient(45deg, var(--school-primary), var(--school-secondary));
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-chalkboard-teacher fa-3x text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white fw-bold mb-1">👨‍🏫 My Assessors</h2>
+                        <p class="text-white-50 mb-0">
+                            <i class="fas fa-school me-2"></i>Your assigned assessors at {{ school.name }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'dashboard' %}" class="back-btn">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+        
+        <!-- School Info Card -->
+        <div class="school-card mb-4">
+            <div class="card-header" style="background: linear-gradient(45deg, var(--school-primary), var(--school-secondary));">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="text-white mb-0">
+                        <i class="fas fa-school me-2"></i>School Information
+                    </h4>
+                    <span class="school-badge">
+                        <i class="fas fa-users me-2"></i>{{ assessors|length }} Assessors
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="fw-bold text-dark mb-3">{{ school.name }}</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    <strong>Address:</strong>
+                                    <span class="ms-2">{{ school.address|default:"Address not provided" }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-phone text-primary me-2"></i>
+                                    <strong>Phone:</strong>
+                                    <span class="ms-2">{{ school.phone_number|default:"Not available" }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <i class="fas fa-location-arrow text-success me-2"></i>
+                                    <strong>Location:</strong>
+                                    <span class="ms-2">{{ school.district.name }}, {{ school.district.region.name }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-envelope text-info me-2"></i>
+                                    <strong>Email:</strong>
+                                    <span class="ms-2">{{ school.email|default:"Not available" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center mt-4 mt-md-0">
+                        <div class="p-4 rounded" style="background: linear-gradient(45deg, rgba(0, 180, 219, 0.1), rgba(0, 131, 176, 0.1));">
+                            <i class="fas fa-user-graduate fa-4x" style="color: var(--school-primary);"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Assessors Grid -->
+        {% if assessors %}
+        <div class="row g-4">
+            {% for assessor in assessors %}
+            <div class="col-xl-4 col-md-6">
+                <div class="assessor-card">
+                    <div class="card-body">
+                        <!-- Assessor Avatar -->
+                        <div class="text-center mb-4">
+                            <div class="assessor-avatar">
+                                {{ assessor.full_name|first }}
+                            </div>
+                            <h4 class="fw-bold mb-2">{{ assessor.full_name }}</h4>
+                            <span class="badge bg-primary rounded-pill px-3 py-2">
+                                <i class="fas fa-id-badge me-1"></i>Assessor ID: {{ assessor.id }}
+                            </span>
+                        </div>
+                        
+                        <!-- Assessor Info -->
+                        <div class="mb-4">
+                            <div class="info-item">
+                                <i class="fas fa-envelope text-info me-2"></i>
+                                <strong>Email:</strong>
+                                <span class="ms-2">{{ assessor.email|truncatechars:25 }}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-phone text-success me-2"></i>
+                                <strong>Phone:</strong>
+                                <span class="ms-2">{{ assessor.phone_number|default:"N/A" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-calendar-alt text-warning me-2"></i>
+                                <strong>Assigned Since:</strong>
+                                <span class="ms-2">{{ assessor.created_at|date:"M d, Y" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-clock text-primary me-2"></i>
+                                <strong>Last Active:</strong>
+                                <span class="ms-2">
+    {% if assessor.user.last_login %}
+        {{ assessor.user.last_login|timesince }} ago
+    {% else %}
+        Never
+    {% endif %}
+</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Actions -->
+                    <div class="card-footer bg-transparent border-0 pt-0">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <a href="mailto:{{ assessor.email }}" class="btn btn-email w-100">
+                                    <i class="fas fa-envelope me-2"></i>Email
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="tel:{{ assessor.phone_number }}" class="btn btn-call w-100">
+                                    <i class="fas fa-phone me-2"></i>Call
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- No Assessors Message -->
+        <div class="school-card">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center" 
+                         style="width: 120px; height: 120px; background: linear-gradient(45deg, rgba(0, 180, 219, 0.1), rgba(0, 131, 176, 0.1));">
+                        <i class="fas fa-chalkboard-teacher fa-4x" style="color: var(--school-primary);"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold text-dark mb-3">No Assessors Assigned Yet</h3>
+                <p class="text-muted mb-4">
+                    Your school currently has no assessors assigned. <br>
+                    Administrators will assign assessors soon.
+                </p>
+                <div class="mt-4">
+                    <a href="{% url 'dashboard' %}" class="back-btn">
+                        <i class="fas fa-home me-2"></i>Return to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

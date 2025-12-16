@@ -1,0 +1,165 @@
+{% extends 'field_app/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-history"></i>
+                        Historia ya Logbook
+                    </h4>
+                    <div>
+                        <a href="{% url 'logbook_download_options' %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-download"></i> Pakua PDF
+                        </a>
+                        <a href="{% url 'submit_logbook' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-plus"></i> Logbook Mpya
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <form method="get" class="row g-2">
+                                <div class="col-md-6">
+                                    <label>Chagua Wiki:</label>
+                                    <input type="week" name="week" class="form-control" 
+                                           value="{{ request.GET.week }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Chagua Mwezi:</label>
+                                    <input type="month" name="month" class="form-control"
+                                           value="{{ request.GET.month }}">
+                                </div>
+                                <div class="col-md-12 mt-2">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-filter"></i> Chuja
+                                    </button>
+                                    <a href="{% url 'logbook_history' %}" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-times"></i> Ondoa Michujo
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="alert alert-info">
+                                <strong>Jumla:</strong> {{ entries.count }} ingizo
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logbook Entries -->
+                    {% for entry in entries %}
+                    <div class="card mb-3 {% if entry.is_location_verified and entry.is_at_school %}border-success{% elif entry.is_location_verified and not entry.is_at_school %}border-warning{% else %}border-secondary{% endif %}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-calendar me-2"></i>{{ entry.get_day_of_week_display }} - {{ entry.date }}
+                            </h5>
+                            <div>
+                                {% if entry.is_location_verified %}
+                                    {% if entry.is_at_school %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Eneo Imethibitishwa - Karibu na Shule
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>Eneo Imethibitishwa - Mbali na Shule
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-question-circle me-1"></i>Eneo Haijathibitishwa
+                                    </span>
+                                {% endif %}
+                                
+                                {% if entry.morning_check_in %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-clock me-1"></i>Ingia: {{ entry.morning_check_in|time }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-sun me-2"></i>Shughuli za Asubuhi:</h6>
+                                    <p class="{% if not entry.morning_activity %}text-muted{% endif %}">
+                                        {{ entry.morning_activity|default:"Haijajazwa"|linebreaks }}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-cloud-sun me-2"></i>Shughuli za Mchana:</h6>
+                                    <p class="{% if not entry.afternoon_activity %}text-muted{% endif %}">
+                                        {{ entry.afternoon_activity|default:"Haijajazwa"|linebreaks }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Changamoto:</h6>
+                                    <p class="{% if not entry.challenges_faced %}text-muted{% endif %}">
+                                        {{ entry.challenges_faced|default:"Hakuna changamoto zilizorekodiwa"|linebreaks }}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-graduation-cap me-2"></i>Mafunzo:</h6>
+                                    <p class="{% if not entry.lessons_learned %}text-muted{% endif %}">
+                                        {{ entry.lessons_learned|default:"Hakuna mafunzo yaliyorekodiwa"|linebreaks }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- 🔥 SEHEMU MPYA: Eneo la Kilah Ingizo -->
+                            <div class="row mt-4 border-top pt-3">
+                                <div class="col-12">
+                                    <h6><i class="fas fa-map-marker-alt me-2"></i>Eneo la Kujaza Logbook:</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {% if entry.latitude and entry.longitude %}
+                                                <p class="mb-1">
+                                                    <strong>GPS:</strong> 
+                                                    <span class="badge bg-dark">{{ entry.latitude|floatformat:6 }}, {{ entry.longitude|floatformat:6 }}</span>
+                                                </p>
+                                                <a href="https://maps.google.com/?q={{ entry.latitude }},{{ entry.longitude }}" 
+                                                   target="_blank" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-external-link-alt me-1"></i>Angalia Ramani
+                                                </a>
+                                            {% else %}
+                                                <p class="text-muted mb-1">
+                                                    <strong>GPS:</strong> Hakuna data ya eneo
+                                                </p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {% if entry.location_address %}
+                                                <p class="mb-1"><strong>Anwani:</strong></p>
+                                                <p class="text-muted small">{{ entry.location_address }}</p>
+                                            {% else %}
+                                                <p class="text-muted">Hakuna anwani iliyorekodiwa</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                        <h5>Hakuna ingizo la logbook lililopatikana</h5>
+                        <p>Bofya "Logbook Mpya" kuanza kujaza logbook yako</p>
+                        <a href="{% url 'submit_logbook' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Anza Logbook Mpya
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

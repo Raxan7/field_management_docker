@@ -1,0 +1,632 @@
+{% extends 'field_app/base.html' %}
+
+{% block title %}Assessors List{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-user-tie me-2"></i>
+                            Assessors Management
+                        </h4>
+                        <div>
+                            <a href="{% url 'bulk_assign_assessors' %}" class="btn btn-light btn-sm">
+                                <i class="fas fa-plus me-1"></i> Bulk Assign
+                            </a>
+                            <a href="{% url 'resend_credentials' %}" class="btn btn-warning btn-sm ms-2">
+                                <i class="fas fa-envelope me-1"></i> Resend Credentials
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="card-title">{{ assessors|length }}</h3>
+                                    <p class="card-text">Total Assessors</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="card-title">{{ assessors_with_accounts }}</h3>
+                                    <p class="card-text">With Accounts</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="card-title">{{ assessors_without_accounts }}</h3>
+                                    <p class="card-text">Without Accounts</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <h3 class="card-title">{{ assessors_without_email }}</h3>
+                                    <p class="card-text">Without Email</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search and Filter -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="searchInput" 
+                                       placeholder="Search assessors by name, email, or phone...">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="btn-group float-end" role="group">
+                                <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
+                                    All ({{ assessors|length }})
+                                </button>
+                                <button type="button" class="btn btn-outline-success filter-btn" data-filter="with-account">
+                                    With Account ({{ assessors_with_accounts }})
+                                </button>
+                                <button type="button" class="btn btn-outline-warning filter-btn" data-filter="without-email">
+                                    No Email ({{ assessors_without_email }})
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assessors Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="assessorsTable">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th width="40">
+                                        <input type="checkbox" id="selectAll" class="form-check-input">
+                                    </th>
+                                    <th>#</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Account Status</th>
+                                    <th>Schools Assigned</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assessor in assessors %}
+                                <tr class="assessor-row" 
+                                    data-filter="{% if not assessor.has_account %}no-account{% else %}with-account{% endif %} {% if not assessor.email %}without-email{% endif %}"
+                                    data-name="{{ assessor.full_name|lower }}"
+                                    data-email="{{ assessor.email|default:''|lower }}"
+                                    data-phone="{{ assessor.phone_number|default:''|lower }}">
+                                    <td>
+                                        <input type="checkbox" 
+                                               class="form-check-input assessor-checkbox" 
+                                               name="assessor_ids" 
+                                               value="{{ assessor.id }}">
+                                    </td>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <strong>{{ assessor.full_name }}</strong>
+                                        {% if not assessor.email %}
+                                        <span class="badge bg-danger ms-2" data-bs-toggle="tooltip" title="No email address">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if assessor.email %}
+                                        <a href="mailto:{{ assessor.email }}" class="text-decoration-none">
+                                            {{ assessor.email }}
+                                        </a>
+                                        {% else %}
+                                        <span class="text-danger">
+                                            <i class="fas fa-times-circle me-1"></i> No email
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ assessor.phone_number|default:"-" }}</td>
+                                    <td>
+                                        {% if assessor.has_account %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i> Active Account
+                                        </span>
+                                        <small class="d-block text-muted">
+                                            Username: {{ assessor.user.username|default:"-" }}
+                                        </small>
+                                        {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-exclamation-triangle me-1"></i> No Account
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="schools-container">
+                                            {% if assessor.schools_count > 0 %}
+                                            <span class="badge bg-primary">
+                                                {{ assessor.schools_count }} school{{ assessor.schools_count|pluralize }}
+                                            </span>
+                                            <div class="mt-1">
+                                                {% for assignment in assessor.assigned_schools|slice:":3" %}
+                                                <small class="d-block">
+                                                    <i class="fas fa-school text-muted me-1"></i>
+                                                    {{ assignment.school.name }}
+                                                </small>
+                                                {% endfor %}
+                                                {% if assessor.schools_count > 3 %}
+                                                <small class="text-muted">
+                                                    +{{ assessor.schools_count|add:"-3" }} more...
+                                                </small>
+                                                {% endif %}
+                                            </div>
+                                            {% else %}
+                                            <span class="badge bg-secondary">No schools</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if assessor.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="View Details"
+                                                    onclick="viewAssessorDetails({{ assessor.id }})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="{% url 'admin:field_app_assessor_change' assessor.id %}" 
+                                               class="btn btn-sm btn-outline-warning"
+                                               data-bs-toggle="tooltip" 
+                                               title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {% if assessor.email and assessor.has_account %}
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-info"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Send Credentials"
+                                                    onclick="sendCredentials('{{ assessor.id }}', '{{ assessor.full_name }}')">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted py-4">
+                                        <i class="fas fa-user-tie fa-3x mb-3"></i>
+                                        <h5>No assessors found</h5>
+                                        <p>Add assessors in the admin panel first</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Bulk Actions -->
+                    <div class="card mt-4" id="bulkActionsCard" style="display: none;">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-tasks me-2"></i>
+                                Bulk Actions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span id="selectedCount">0</span> assessor(s) selected
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-warning" onclick="bulkResendCredentials()">
+                                        <i class="fas fa-envelope me-1"></i> Resend Credentials
+                                    </button>
+                                    <button type="button" class="btn btn-danger ms-2" onclick="bulkDeactivate()">
+                                        <i class="fas fa-user-slash me-1"></i> Deactivate
+                                    </button>
+                                    <button type="button" class="btn btn-success ms-2" onclick="bulkActivate()">
+                                        <i class="fas fa-user-check me-1"></i> Activate
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if assessors.has_other_pages %}
+                    <nav aria-label="Assessors pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if assessors.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">&laquo; First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ assessors.previous_page_number }}">Previous</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in assessors.paginator.page_range %}
+                                {% if assessors.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% elif num > assessors.number|add:'-3' and num < assessors.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if assessors.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ assessors.next_page_number }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ assessors.paginator.num_pages }}">Last &raquo;</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assessor Details Modal -->
+<div class="modal fade" id="assessorDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Assessor Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="assessorDetailsContent">
+                <!-- Content will be loaded via AJAX -->
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize variables
+let selectedAssessors = new Set();
+
+// Search functionality
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('.assessor-row');
+    
+    rows.forEach(row => {
+        const name = row.getAttribute('data-name');
+        const email = row.getAttribute('data-email');
+        const phone = row.getAttribute('data-phone');
+        
+        if (name.includes(searchTerm) || email.includes(searchTerm) || phone.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+
+// Filter functionality
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // Remove active class from all buttons
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        const filter = this.getAttribute('data-filter');
+        const rows = document.querySelectorAll('.assessor-row');
+        
+        rows.forEach(row => {
+            if (filter === 'all') {
+                row.style.display = '';
+            } else if (filter === 'with-account') {
+                if (row.getAttribute('data-filter').includes('with-account')) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            } else if (filter === 'without-email') {
+                if (row.getAttribute('data-filter').includes('without-email')) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    });
+});
+
+// Select All checkbox
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.assessor-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+        updateSelectedAssessors(checkbox);
+    });
+    
+    updateBulkActions();
+});
+
+// Individual checkbox changes
+document.querySelectorAll('.assessor-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        updateSelectedAssessors(this);
+        updateBulkActions();
+    });
+});
+
+// Update selected assessors set
+function updateSelectedAssessors(checkbox) {
+    const assessorId = checkbox.value;
+    
+    if (checkbox.checked) {
+        selectedAssessors.add(assessorId);
+    } else {
+        selectedAssessors.delete(assessorId);
+        document.getElementById('selectAll').checked = false;
+    }
+    
+    document.getElementById('selectedCount').textContent = selectedAssessors.size;
+}
+
+// Show/hide bulk actions card
+function updateBulkActions() {
+    const card = document.getElementById('bulkActionsCard');
+    if (selectedAssessors.size > 0) {
+        card.style.display = 'block';
+    } else {
+        card.style.display = 'none';
+    }
+}
+
+// View assessor details
+function viewAssessorDetails(assessorId) {
+    fetch(`/field-app/api/assessor/${assessorId}/details/`)
+        .then(response => response.json())
+        .then(data => {
+            const modalContent = document.getElementById('assessorDetailsContent');
+            modalContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px;">
+                                <i class="fas fa-user-tie fa-2x"></i>
+                            </div>
+                            <h5 class="mt-3">${data.full_name}</h5>
+                            <p class="text-muted">Assessor</p>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h6>Contact Information</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <th width="30%">Email:</th>
+                                <td>
+                                    ${data.email ? `<a href="mailto:${data.email}">${data.email}</a>` : '<span class="text-danger">No email</span>'}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Phone:</th>
+                                <td>${data.phone_number || '-'}</td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    ${data.is_active ? 
+                                        '<span class="badge bg-success">Active</span>' : 
+                                        '<span class="badge bg-danger">Inactive</span>'}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Account:</th>
+                                <td>
+                                    ${data.has_account ? 
+                                        '<span class="badge bg-success">Has User Account</span>' : 
+                                        '<span class="badge bg-warning">No User Account</span>'}
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <h6 class="mt-4">Assigned Schools</h6>
+                        ${data.schools_count > 0 ? `
+                            <div class="list-group">
+                                ${data.schools.map(school => `
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <strong>${school.name}</strong><br>
+                                                <small class="text-muted">${school.district}</small>
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-info">${school.assessment_date}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <p class="mt-2"><small>Total: ${data.schools_count} schools</small></p>
+                        ` : '<p class="text-muted">No schools assigned</p>'}
+                    </div>
+                </div>
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('assessorDetailsModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load assessor details');
+        });
+}
+
+// Send credentials to single assessor
+function sendCredentials(assessorId, assessorName) {
+    if (confirm(`Send credentials to ${assessorName}?`)) {
+        fetch(`/field-app/api/assessor/${assessorId}/resend-credentials/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({assessor_id: assessorId})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Credentials sent successfully!');
+            } else {
+                alert('Failed to send credentials: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to send credentials');
+        });
+    }
+}
+
+// Bulk resend credentials
+function bulkResendCredentials() {
+    if (selectedAssessors.size === 0) {
+        alert('Please select at least one assessor');
+        return;
+    }
+    
+    if (confirm(`Send credentials to ${selectedAssessors.size} assessor(s)?`)) {
+        // Redirect to resend credentials page with selected IDs
+        const ids = Array.from(selectedAssessors).join(',');
+        window.location.href = `{% url 'resend_credentials' %}?ids=${ids}`;
+    }
+}
+
+// Bulk deactivate
+function bulkDeactivate() {
+    if (selectedAssessors.size === 0) return;
+    
+    if (confirm(`Deactivate ${selectedAssessors.size} assessor(s)?`)) {
+        // Implement deactivation logic here
+        console.log('Deactivating:', Array.from(selectedAssessors));
+    }
+}
+
+// Bulk activate
+function bulkActivate() {
+    if (selectedAssessors.size === 0) return;
+    
+    if (confirm(`Activate ${selectedAssessors.size} assessor(s)?`)) {
+        // Implement activation logic here
+        console.log('Activating:', Array.from(selectedAssessors));
+    }
+}
+
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+
+<style>
+.assessor-row:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-weight: 500;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+.btn-group .btn {
+    border-radius: 0.25rem;
+}
+
+.filter-btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+#bulkActionsCard {
+    transition: all 0.3s ease;
+}
+
+@media print {
+    .btn, .modal, .pagination, #bulkActionsCard, .filter-btn {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+{% endblock %}

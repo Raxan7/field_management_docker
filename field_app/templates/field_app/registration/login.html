@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Field Placement Login | Academic Portal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Add QR Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style type="text/css">
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(rgba(10, 61, 98, 0.85), rgba(7, 153, 146, 0.85)), 
+                        url('https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        
+        .academic-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .academic-header {
+            background: linear-gradient(135deg, #0a3d62 0%, #079992 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .academic-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80') center/cover;
+            opacity: 0.2;
+        }
+        
+        .academic-input {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .academic-input:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #f6b93b;
+            box-shadow: 0 0 0 3px rgba(246, 185, 59, 0.3);
+        }
+        
+        .academic-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .academic-btn {
+            background: linear-gradient(135deg, #f6b93b 0%, #e55039 100%);
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        
+        .academic-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.2);
+        }
+        
+        .academic-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .biometric-btn {
+            background: rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .biometric-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .divider::before {
+            margin-right: 1rem;
+        }
+        
+        .divider::after {
+            margin-left: 1rem;
+        }
+        
+        .academic-feature {
+            background: rgba(106, 27, 154, 0.25);
+            border-left: 3px solid #f6b93b;
+        }
+        
+        .academic-feature i {
+            color: #f6b93b;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(246, 185, 59, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(246, 185, 59, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(246, 185, 59, 0); }
+        }
+        
+        .college-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(30px);
+            transition: all 0.8s ease-in-out;
+        }
+        
+        .college-slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .college-slide.exiting {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        
+        .college-display {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .progress-dot.active {
+            background: #f6b93b;
+            transform: scale(1.2);
+        }
+        
+        /* QR SCANNER STYLES */
+        .qr-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 61, 98, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .qr-scanner-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        
+        .qr-scanner-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .qr-scanner-header h3 {
+            color: white;
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .qr-scanner-header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+        
+        .admin-qr-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            width: 100%;
+        }
+        
+        .admin-qr-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.2);
+        }
+        
+        #qr-reader {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        
+        #qr-reader__dashboard_section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        #qr-reader__scan_region {
+            border: 2px dashed #f6b93b !important;
+            border-radius: 10px;
+        }
+        
+        #qrResult {
+            min-height: 50px;
+            margin-top: 15px;
+            color: white;
+            text-align: center;
+        }
+        
+        /* CAMERA ALTERNATIVE STYLES */
+        .camera-fallback {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .camera-fallback.active {
+            display: block;
+        }
+        
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            margin: 0 auto 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        @media (max-width: 768px) {
+            .academic-card {
+                border-radius: 15px;
+                margin: 1rem;
+            }
+            
+            .features-section {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+    <!-- QR SCANNER OVERLAY -->
+    <div class="qr-overlay" id="qrOverlay">
+        <div class="qr-scanner-container">
+            <div class="qr-scanner-header">
+                <div class="w-16 h-16 rounded-full bg-red-600/20 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-shield-alt text-red-500 text-2xl"></i>
+                </div>
+                <h3>Admin Portal QR Scanner</h3>
+                <p>Scan admin QR code to access panel</p>
+            </div>
+            
+            <!-- QR Scanner (hidden if no camera) -->
+            <div id="qr-reader"></div>
+            
+            <!-- Camera Alternative (shown if no camera) -->
+            <div class="camera-fallback" id="cameraFallback">
+                <div class="qr-placeholder">
+                    <i class="fas fa-camera-slash text-3xl mb-3"></i>
+                    <span>Camera not available</span>
+                </div>
+                <p class="text-white/70 text-sm mb-4">
+                    Use one of these alternative methods:
+                </p>
+                <div class="space-y-3">
+                    <button onclick="usePhoneCamera()" class="admin-qr-btn" style="background: linear-gradient(135deg, #2196F3 0%, #03A9F4 100%);">
+                        <i class="fas fa-mobile-alt"></i>
+                        Use Phone Camera
+                    </button>
+                    <button onclick="directAdminAccess()" class="admin-qr-btn" style="background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);">
+                        <i class="fas fa-external-link-alt"></i>
+                        Direct Access
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Scan Result -->
+            <div id="qrResult"></div>
+            
+            <!-- Close Button -->
+            <div class="text-center mt-6">
+                <button onclick="closeQRScanner()" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                    <i class="fas fa-times mr-2"></i>Close Scanner
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="max-w-6xl w-full flex flex-col md:flex-row gap-8">
+        <!-- Login Card -->
+        <div class="w-full md:w-1/2 lg:w-2/5">
+            <div class="academic-card">
+                <!-- Header -->
+                <div class="academic-header py-8 px-6 text-center relative">
+                    <div class="relative z-10">
+                        <div class="w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mx-auto flex items-center justify-center mb-4 pulse">
+                            <i class="fas fa-graduation-cap text-white text-3xl"></i>
+                        </div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-white font-playfair">Field Placement Portal</h1>
+                        <p class="text-blue-100 mt-2 text-sm md:text-base">Login to access your academic dashboard</p>
+                    </div>
+                </div>
+                
+                <!-- Form -->
+                <div class="p-6 md:p-8">
+                    <div class="mb-6 academic-feature rounded-lg px-4 py-3 flex items-start">
+                        <i class="fas fa-info-circle mt-1 mr-3"></i>
+                        <p class="text-white text-sm">Use your university credentials to access field placement resources</p>
+                    </div>
+                    
+                    <!-- ADMIN QR ACCESS SECTION -->
+                    <div class="mb-6 bg-gradient-to-r from-purple-900/20 to-blue-800/20 border border-purple-500/30 rounded-lg p-4">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-full bg-purple-600/20 flex items-center justify-center mr-3">
+                                <i class="fas fa-shield-alt text-purple-400"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-medium">Admin Secure Access</h4>
+                                <p class="text-white/70 text-sm">QR Code or Direct Login</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Primary QR Button -->
+                        <button onclick="openQRScanner()" class="admin-qr-btn" style="background: linear-gradient(135deg, #6a1b9a 0%, #0a3d62 100%);">
+                            <i class="fas fa-qrcode"></i>
+                            Scan Admin QR Code
+                        </button>
+                        
+                        <!-- Alternative Methods (Hidden by default) -->
+                        <div id="altMethods" class="hidden mt-3 space-y-2">
+                            <button onclick="directAdminAccess()" class="admin-qr-btn" style="background: linear-gradient(135deg, #2196F3 0%, #03A9F4 100%);">
+                                <i class="fas fa-external-link-alt"></i>
+                                Direct Admin Access
+                            </button>
+                            <button onclick="generatePhoneQR()" class="admin-qr-btn" style="background: linear-gradient(135deg, #FF9800 0%, #FF5722 100%);">
+                                <i class="fas fa-mobile-alt"></i>
+                                Generate Phone QR
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- DIRECT ACCESS FOR PC WITHOUT CAMERA -->
+                    <div class="mb-4 p-3 bg-gradient-to-r from-gray-900/20 to-gray-800/20 rounded-lg border border-gray-500/20">
+                        <p class="text-white/70 text-xs mb-2 text-center">
+                            <i class="fas fa-desktop mr-1"></i>
+                            PC without camera?
+                        </p>
+                        <div class="flex gap-2">
+                            <button onclick="directAdminAccess()" class="flex-1 bg-gradient-to-r from-green-500 to-teal-500 text-white py-2 rounded-lg text-sm">
+                                <i class="fas fa-bolt mr-1"></i>Quick Access
+                            </button>
+                            <a href="/admin/" class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-2 rounded-lg text-sm text-center no-underline flex items-center justify-center">
+                                <i class="fas fa-external-link-alt mr-1"></i>Admin Panel
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <form method="post" action="{% url 'login' %}" class="space-y-5">
+    {% csrf_token %}
+
+    <div>
+        <label class="block text-white text-sm font-medium mb-2" for="email">
+            University Email
+        </label>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-envelope text-white/60"></i>
+            </div>
+            <input id="email" name="username" type="email" class="academic-input w-full pl-10 pr-3 py-3 rounded-lg" placeholder="student@university.edu" required>
+        </div>
+    </div>
+    
+    <div>
+        <label class="block text-white text-sm font-medium mb-2" for="password">
+            Password
+        </label>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-lock text-white/60"></i>
+            </div>
+            <input id="password" name="password" type="password" class="academic-input w-full pl-10 pr-10 py-3 rounded-lg" placeholder="••••••••" required>
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <button type="button" class="text-white/60 hover:text-white focus:outline-none" id="togglePassword">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input id="remember" type="checkbox" class="h-4 w-4 text-academic-gold focus:ring-academic-gold border-gray-300 rounded">
+                                <label for="remember" class="ml-2 block text-sm text-white">
+                                    Remember me
+                                </label>
+                            </div>
+                            <div class="text-sm">
+                                <a href="#" class="font-medium text-academic-gold hover:text-yellow-500">
+                                    Forgot password?
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="academic-btn w-full py-3.5 rounded-lg text-white font-semibold text-lg">
+                            Sign In to Portal
+                        </button>
+                    </form>
+                    
+                    <div class="divider my-6">or continue with</div>
+                    
+                    <div class="space-y-3">
+                        <button class="biometric-btn w-full py-2.5 rounded-lg text-white flex items-center justify-center gap-3" onclick="openQRScanner()">
+                            <i class="fas fa-qrcode"></i>
+                            Admin QR Login
+                        </button>
+                        
+                        <a href="/admin/" class="biometric-btn w-full py-2.5 rounded-lg text-white flex items-center justify-center gap-3">
+                            <i class="fas fa-user-shield"></i>
+                            Direct Admin Panel
+                        </a>
+                    </div>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-white">
+                            Don't have an account? 
+                            <a href="{% url 'register' %}"class="font-medium text-academic-gold hover:text-yellow-500">
+                                Register here
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Section -->
+        <div class="w-full md:w-1/2 lg:w-3/5 features-section">
+            <div class="text-white">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6 font-playfair">Academic Field Placement Platform</h2>
+                <p class="text-lg text-blue-100 mb-8 max-w-2xl">
+                    Our platform connects students with industry-leading organizations for practical field experience. Gain real-world skills and academic credit simultaneously.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                        <div class="w-12 h-12 rounded-lg bg-academic-teal flex items-center justify-center mb-4">
+                            <i class="fas fa-briefcase text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Industry Placements</h3>
+                        <p class="text-blue-100">Access exclusive partnerships with top companies in your field of study.</p>
+                    </div>
+                    
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                        <div class="w-12 h-12 rounded-lg bg-academic-maroon flex items-center justify-center mb-4">
+                            <i class="fas fa-chart-line text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Performance Tracking</h3>
+                        <p class="text-blue-100">Monitor your progress with real-time analytics and supervisor feedback.</p>
+                    </div>
+                    
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                        <div class="w-12 h-12 rounded-lg bg-academic-gold flex items-center justify-center mb-4">
+                            <i class="fas fa-file-alt text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Academic Reporting</h3>
+                        <p class="text-blue-100">Submit field reports and evaluations directly through the platform.</p>
+                    </div>
+                    
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                        <div class="w-12 h-12 rounded-lg bg-academic-blue flex items-center justify-center mb-4">
+                            <i class="fas fa-users text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Mentorship Program</h3>
+                        <p class="text-blue-100">Connect with industry professionals and academic advisors.</p>
+                    </div>
+                </div>
+                
+                <!-- Dynamic College Display Section -->
+                <div class="mt-10 bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-academic-gold">Partner Teacher Colleges</h3>
+                        <div class="flex items-center space-x-2">
+                            <button id="prevCollege" class="text-white/70 hover:text-academic-gold transition-colors">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span class="text-white/70 text-sm" id="collegeCounter">1/8</span>
+                            <button id="nextCollege" class="text-white/70 hover:text-academic-gold transition-colors">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <button id="pausePlay" class="text-white/70 hover:text-academic-gold transition-colors ml-2">
+                                <i class="fas fa-pause" id="playPauseIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="college-display">
+                        <!-- College slides will be dynamically inserted here -->
+                    </div>
+                    
+                    <div class="progress-dots" id="progressDots">
+                        <!-- Progress dots will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // QR SCANNER SYSTEM
+        // ============================================
+        let qrScanner = null;
+        let hasCamera = null;
+        
+        // Check camera availability
+        async function checkCamera() {
+            if (hasCamera !== null) return hasCamera;
+            
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    hasCamera = false;
+                    return false;
+                }
+                
+                // Test camera access
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                stream.getTracks().forEach(track => track.stop());
+                hasCamera = true;
+                return true;
+            } catch (error) {
+                console.log("Camera check failed:", error);
+                hasCamera = false;
+                return false;
+            }
+        }
+        
+        // Open QR Scanner
+        async function openQRScanner() {
+            const overlay = document.getElementById('qrOverlay');
+            overlay.style.display = 'flex';
+            
+            // Show loading
+            document.getElementById('qrResult').innerHTML = 
+                '<div class="bg-blue-900/30 text-white p-3 rounded-lg">' +
+                '<i class="fas fa-spinner fa-spin mr-2"></i>' +
+                'Checking camera...' +
+                '</div>';
+            
+            // Check camera
+            const cameraAvailable = await checkCamera();
+            
+            if (cameraAvailable) {
+                // Hide fallback, show scanner
+                document.getElementById('cameraFallback').classList.remove('active');
+                document.getElementById('qrResult').innerHTML = '';
+                
+                // Initialize scanner
+                if (!qrScanner) {
+                    qrScanner = new Html5Qrcode("qr-reader");
+                    
+                    try {
+                        await qrScanner.start(
+                            { facingMode: "environment" },
+                            {
+                                fps: 10,
+                                qrbox: { width: 200, height: 200 }
+                            },
+                            onQRScanSuccess,
+                            onQRScanError
+                        );
+                    } catch (error) {
+                        // If scanner fails, show fallback
+                        cameraNotAvailable();
+                    }
+                }
+            } else {
+                // Camera not available
+                cameraNotAvailable();
+            }
+        }
+        
+        function cameraNotAvailable() {
+            // Stop scanner if running
+            if (qrScanner) {
+                qrScanner.stop().catch(() => {});
+                qrScanner = null;
+            }
+            
+            // Hide scanner, show fallback
+            document.getElementById('qr-reader').style.display = 'none';
+            document.getElementById('cameraFallback').classList.add('active');
+            document.getElementById('qrResult').innerHTML = 
+                '<div class="bg-yellow-900/30 text-white p-3 rounded-lg">' +
+                '<i class="fas fa-exclamation-triangle mr-2"></i>' +
+                'Camera not available. Use alternative methods.' +
+                '</div>';
+            
+            // Show alternative methods on main page too
+            document.getElementById('altMethods').classList.remove('hidden');
+        }
+        
+        function closeQRScanner() {
+            const overlay = document.getElementById('qrOverlay');
+            overlay.style.display = 'none';
+            
+            if (qrScanner) {
+                qrScanner.stop().then(() => {
+                    qrScanner = null;
+                }).catch(() => {});
+            }
+            
+            document.getElementById('qrResult').innerHTML = '';
+            document.getElementById('qr-reader').style.display = 'block';
+            document.getElementById('cameraFallback').classList.remove('active');
+        }
+        
+        function onQRScanSuccess(decodedText, decodedResult) {
+            // Show success message
+            document.getElementById('qrResult').innerHTML = 
+                '<div class="bg-green-900/30 text-white p-3 rounded-lg">' +
+                '<i class="fas fa-check-circle mr-2"></i>' +
+                'Admin QR verified! Redirecting...' +
+                '</div>';
+            
+            // Stop scanner
+            if (qrScanner) {
+                qrScanner.stop().then(() => {
+                    qrScanner = null;
+                });
+            }
+            
+            // Redirect to admin
+            setTimeout(() => {
+                window.location.href = '/admin/';
+            }, 1000);
+        }
+        
+        function onQRScanError(errorMessage) {
+            // Optional: Log scan errors
+            console.log("QR Scan error:", errorMessage);
+        }
+        
+        // ============================================
+        // ALTERNATIVE METHODS
+        // ============================================
+        function directAdminAccess() {
+            // Simple direct redirect
+            window.location.href = '/admin/';
+        }
+        
+        function usePhoneCamera() {
+            // Create QR for phone scanning
+            const phonePopup = document.createElement('div');
+            phonePopup.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 10000;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+            `;
+            
+            // Create a "fake" QR code (actually just a clickable image)
+            const canvas = document.createElement('canvas');
+            canvas.width = 300;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw QR-like pattern
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, 300, 300);
+            
+            ctx.fillStyle = '#0a3d62';
+            
+            // Position markers
+            ctx.fillRect(40, 40, 60, 60);
+            ctx.clearRect(55, 55, 30, 30);
+            
+            ctx.fillRect(200, 40, 60, 60);
+            ctx.clearRect(215, 55, 30, 30);
+            
+            ctx.fillRect(40, 200, 60, 60);
+            ctx.clearRect(55, 215, 30, 30);
+            
+            // Center pattern
+            ctx.fillRect(110, 110, 80, 80);
+            ctx.clearRect(125, 125, 50, 50);
+            
+            // Add text
+            ctx.fillStyle = '#0a3d62';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('ADMIN ACCESS', 150, 280);
+            
+            phonePopup.innerHTML = `
+                <div style="text-align: center; color: white; max-width: 350px; padding: 20px;">
+                    <h3 style="margin-bottom: 10px; font-size: 1.3rem;">Scan with Phone Camera</h3>
+                    <p style="color: #ccc; margin-bottom: 20px; font-size: 14px;">
+                        1. Open camera on your phone<br>
+                        2. Point at this QR code<br>
+                        3. It will redirect to admin panel
+                    </p>
+                </div>
+                <button onclick="directAdminAccess()" 
+                        style="background: #4CAF50; color: white; border: none; 
+                               padding: 12px 30px; border-radius: 8px; cursor: pointer; 
+                               margin-top: 20px; font-weight: bold;">
+                    <i class="fas fa-external-link-alt mr-2"></i>Go to Admin Now
+                </button>
+                <button onclick="this.parentElement.remove()" 
+                        style="background: transparent; color: #ccc; border: 1px solid #666; 
+                               padding: 10px 25px; border-radius: 8px; cursor: pointer; 
+                               margin-top: 15px;">
+                    Close
+                </button>
+            `;
+            
+            // Insert canvas at beginning
+            phonePopup.insertBefore(canvas, phonePopup.firstChild);
+            document.body.appendChild(phonePopup);
+            
+            // Close QR scanner overlay
+            closeQRScanner();
+        }
+        
+        function generatePhoneQR() {
+            // Similar to usePhoneCamera but from main page
+            usePhoneCamera();
+        }
+        
+        // ============================================
+        // PASSWORD TOGGLE
+        // ============================================
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+        
+        // ============================================
+        // COLLEGE DISPLAY SYSTEM (Existing)
+        // ============================================
+        const colleges = [
+            {
+                name: "Kasulu Teachers College",
+                region: "Kigoma Region",
+                description: "Leading teacher training institution in Western Tanzania with modern teaching facilities and experienced faculty.",
+                programs: "Diploma in Education"
+            },
+            {
+                name: "Mpwapwa Teachers College",
+                region: "Dodoma Region",
+                description: "Central Tanzania's premier teacher education center focused on primary and secondary education development.",
+                programs: "Certificate & Diploma Programs"
+            },
+            {
+                name: "Kleruu Teachers College",
+                region: "Iringa Region",
+                description: "Excellence in teacher education with strong emphasis on practical teaching methodologies and curriculum development.",
+                programs: "Diploma in Education"
+            },
+            {
+                name: "Butimba Teachers College",
+                region: "Mwanza Region",
+                description: "Lake Zone's leading institution for teacher training, specializing in languages and social sciences education.",
+                programs: "Diploma in Education"
+            },
+            {
+                name: "Monduli Teachers College",
+                region: "Arusha Region",
+                description: "Northern Tanzania's hub for early childhood and primary education teacher training programs.",
+                programs: "Certificate & Diploma Programs"
+            },
+            {
+                name: "Morogoro Teachers College",
+                region: "Morogoro Region",
+                description: "Innovative approaches in teacher education with focus on agricultural and rural development education.",
+                programs: "Diploma in Education"
+            },
+            {
+                name: "Tabora Teachers College",
+                region: "Tabora Region",
+                description: "Central corridor specialist in history, geography, and civic education teacher training.",
+                programs: "Diploma in Education"
+            },
+            {
+                name: "Tanga Teachers College",
+                region: "Tanga Region",
+                description: "Coastal education excellence with focus on language education and cultural studies programs.",
+                programs: "Certificate & Diploma Programs"
+            }
+        ];
+
+        let currentCollegeIndex = 0;
+        let isPlaying = true;
+        let collegeInterval;
+        const collegeDisplay = document.querySelector('.college-display');
+        const collegeCounter = document.getElementById('collegeCounter');
+        const progressDots = document.getElementById('progressDots');
+        const pausePlayBtn = document.getElementById('pausePlay');
+        const playPauseIcon = document.getElementById('playPauseIcon');
+        const nextBtn = document.getElementById('nextCollege');
+        const prevBtn = document.getElementById('prevCollege');
+
+        function initCollegeDisplay() {
+            createCollegeSlides();
+            createProgressDots();
+            showCollege(0);
+            startAutoPlay();
+            updateCollegeCounter();
+        }
+
+        function createCollegeSlides() {
+            colleges.forEach((college, index) => {
+                const slide = document.createElement('div');
+                slide.className = `college-slide ${index === 0 ? 'active' : ''}`;
+                slide.innerHTML = `
+                    <div class="flex items-start space-x-4">
+                        <div class="w-16 h-16 rounded-full bg-academic-teal/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-university text-academic-teal text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold text-white mb-1">${college.name}</h4>
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-map-marker-alt text-academic-gold mr-2 text-sm"></i>
+                                <span class="text-blue-100 text-sm">${college.region}</span>
+                            </div>
+                            <p class="text-blue-100 text-sm mb-2">${college.description}</p>
+                            <div class="flex items-center">
+                                <i class="fas fa-graduation-cap text-academic-gold mr-2 text-sm"></i>
+                                <span class="text-academic-gold text-sm font-medium">${college.programs}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                collegeDisplay.appendChild(slide);
+            });
+        }
+
+        function createProgressDots() {
+            colleges.forEach((_, index) => {
+                const dot = document.createElement('div');
+                dot.className = `progress-dot ${index === 0 ? 'active' : ''}`;
+                dot.addEventListener('click', () => {
+                    if (isPlaying) {
+                        clearInterval(collegeInterval);
+                        isPlaying = false;
+                        playPauseIcon.className = 'fas fa-play';
+                    }
+                    showCollege(index);
+                });
+                progressDots.appendChild(dot);
+            });
+        }
+
+        function showCollege(index) {
+            const currentSlide = document.querySelector('.college-slide.active');
+            const currentDot = document.querySelector('.progress-dot.active');
+            
+            if (currentSlide) {
+                currentSlide.classList.remove('active');
+                currentSlide.classList.add('exiting');
+                setTimeout(() => {
+                    currentSlide.classList.remove('exiting');
+                }, 800);
+            }
+            
+            if (currentDot) {
+                currentDot.classList.remove('active');
+            }
+
+            const slides = document.querySelectorAll('.college-slide');
+            const dots = document.querySelectorAll('.progress-dot');
+            slides[index].classList.add('active');
+            dots[index].classList.add('active');
+            
+            currentCollegeIndex = index;
+            updateCollegeCounter();
+        }
+
+        function updateCollegeCounter() {
+            collegeCounter.textContent = `${currentCollegeIndex + 1}/${colleges.length}`;
+        }
+
+        function startAutoPlay() {
+            if (collegeInterval) clearInterval(collegeInterval);
+            collegeInterval = setInterval(() => {
+                if (isPlaying) {
+                    nextCollege();
+                }
+            }, 4000);
+        }
+
+        function nextCollege() {
+            const nextIndex = (currentCollegeIndex + 1) % colleges.length;
+            showCollege(nextIndex);
+        }
+
+        function prevCollege() {
+            const prevIndex = currentCollegeIndex > 0 ? currentCollegeIndex - 1 : colleges.length - 1;
+            showCollege(prevIndex);
+        }
+
+        function togglePlayPause() {
+            isPlaying = !isPlaying;
+            playPauseIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+            if (isPlaying) {
+                startAutoPlay();
+            } else {
+                clearInterval(collegeInterval);
+            }
+        }
+
+        // Event listeners for college display
+        pausePlayBtn.addEventListener('click', togglePlayPause);
+        nextBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                clearInterval(collegeInterval);
+                isPlaying = false;
+                playPauseIcon.className = 'fas fa-play';
+            }
+            nextCollege();
+        });
+        prevBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                clearInterval(collegeInterval);
+                isPlaying = false;
+                playPauseIcon.className = 'fas fa-play';
+            }
+            prevCollege();
+        });
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if(!email || !password) {
+                e.preventDefault();
+                alert('Please enter both email and password');
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initCollegeDisplay();
+            
+            // Pre-check camera in background
+            setTimeout(() => {
+                checkCamera().then(hasCam => {
+                    if (!hasCam) {
+                        // Show alternative methods if no camera
+                        document.getElementById('altMethods').classList.remove('hidden');
+                    }
+                });
+            }, 1000);
+        });
+        
+        // Auto-redirect if URL has parameter (for testing)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('admin')) {
+            setTimeout(() => {
+                window.location.href = '/admin/';
+            }, 500);
+        }
+    </script>
+</body>
+</html>

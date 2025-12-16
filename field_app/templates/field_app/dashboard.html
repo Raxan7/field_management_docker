@@ -1,0 +1,899 @@
+{% extends 'field_app/base.html' %}
+{% block title %}Dashboard - Field Placement System{% endblock %}
+{% block content %}
+<style>
+    :root {
+        --tz-green: #1EB53A;
+        --tz-blue: #00A3DD;
+        --tz-black: #000000;
+        --tz-yellow: #FCD116;
+        --tz-gold: #FFD700;
+        --light: #f8fafc;
+        --dark: #1e293b;
+    }
+
+    body {
+        background: #f8fafc; /* Clean light background */
+        min-height: 100vh;
+        font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        overflow-x: hidden;
+        margin: 0;
+    }
+
+    /* Sidebar Styles */
+    .sidebar-tz {
+        width: 70px;
+        background: linear-gradient(135deg, var(--tz-green), var(--tz-blue));
+        padding: 1rem 0;
+        position: fixed;
+        height: 100vh;
+        z-index: 1000;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15);
+        left: 0;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .sidebar-tz.expanded {
+        width: 250px;
+    }
+
+    .sidebar-header {
+        padding: 0 1rem 2rem;
+        text-align: center;
+        width: 100%;
+    }
+
+    .sidebar-logo {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .sidebar-logo i {
+        font-size: 2rem;
+    }
+
+    .sidebar-toggle-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-toggle-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(180deg);
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+    }
+
+    .sidebar-item {
+        margin: 0.5rem 0;
+        width: 100%;
+    }
+
+    .sidebar-link {
+        color: white;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        padding: 0.8rem 1rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .sidebar-link:hover {
+        background: rgba(255, 255, 255, 0.2);
+        padding-left: 1.5rem;
+    }
+
+    .sidebar-link.active {
+        background: rgba(255, 255, 255, 0.25);
+        border-left: 4px solid var(--tz-yellow);
+    }
+
+    .sidebar-link i {
+        width: 40px;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar-text {
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+    }
+
+    .sidebar-tz.expanded .sidebar-text {
+        opacity: 1;
+        width: auto;
+        margin-left: 0.5rem;
+    }
+
+    /* Main Content */
+    .main-content {
+        margin-left: 70px;
+        width: calc(100% - 70px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 1rem;
+        min-height: 100vh;
+        background: #f8fafc;
+    }
+
+    .main-content.expanded {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+    }
+
+    /* Dashboard Cards and Content */
+    .premium-card {
+        background: white;
+        border: 1px solid rgba(30, 181, 58, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .premium-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .tz-gradient-text {
+        color: var(--tz-green);
+        font-weight: 700;
+    }
+
+    .stat-tz {
+        background: linear-gradient(135deg, 
+            rgba(30, 181, 58, 0.05), 
+            rgba(0, 163, 221, 0.05));
+        border: 1px solid rgba(30, 181, 58, 0.1);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-tz:hover {
+        border-color: rgba(30, 181, 58, 0.3);
+    }
+
+    .tz-btn {
+        background: linear-gradient(135deg, var(--tz-green), var(--tz-blue));
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .tz-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(30, 181, 58, 0.3);
+        color: white;
+    }
+
+    .tz-btn-gold {
+        background: linear-gradient(135deg, var(--tz-yellow), var(--tz-gold));
+        color: var(--dark);
+    }
+
+    .tz-icon {
+        background: linear-gradient(135deg, var(--tz-green), var(--tz-blue));
+        border-radius: 10px;
+        color: white;
+    }
+
+    .status-dot-tz {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+    }
+
+    .status-approved-tz { background: var(--tz-green); }
+    .status-pending-tz { background: var(--tz-yellow); }
+    .status-rejected-tz { background: #dc3545; }
+
+    .progress-tz {
+        background: rgba(30, 181, 58, 0.1);
+        border-radius: 8px;
+        height: 8px;
+        overflow: hidden;
+    }
+
+    .progress-tz .progress-bar {
+        background: linear-gradient(135deg, var(--tz-green), var(--tz-blue));
+        border-radius: 8px;
+    }
+
+    .floating-tz {
+        animation: floating-tz 3s ease-in-out infinite;
+    }
+
+    @keyframes floating-tz {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
+    }
+
+    /* Responsive font sizes */
+    .welcome-title {
+        font-size: clamp(1.5rem, 4vw, 2.2rem);
+        font-weight: 700;
+    }
+
+    .section-title {
+        font-size: clamp(1.1rem, 3vw, 1.4rem);
+        font-weight: 600;
+    }
+
+    .card-title {
+        font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+        font-weight: 600;
+    }
+
+    .normal-text {
+        font-size: clamp(0.85rem, 2vw, 0.95rem);
+    }
+
+    .small-text {
+        font-size: clamp(0.75rem, 1.8vw, 0.85rem);
+    }
+
+    /* Mobile styles */
+    @media (max-width: 768px) {
+        .sidebar-tz {
+            width: 60px;
+        }
+        
+        .sidebar-tz.expanded {
+            width: 200px;
+        }
+        
+        .main-content {
+            margin-left: 60px;
+            width: calc(100% - 60px);
+            padding: 0.5rem;
+        }
+        
+        .main-content.expanded {
+            margin-left: 200px;
+            width: calc(100% - 200px);
+        }
+        
+        .container-fluid {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        
+        .premium-card {
+            margin-bottom: 0.75rem;
+        }
+        
+        .btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        
+        .sidebar-toggle-btn {
+            width: 35px;
+            height: 35px;
+        }
+    }
+
+    /* Better table responsiveness */
+    .table-responsive {
+        border-radius: 8px;
+    }
+
+    .table th {
+        font-weight: 600;
+        font-size: 0.9rem;
+        background-color: #f8f9fa;
+    }
+
+    /* Badge improvements */
+    .tz-badge {
+        background: linear-gradient(135deg, var(--tz-green), var(--tz-blue));
+        color: white;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    /* Group Letter Status Styles */
+    .group-letter-ready {
+        background: linear-gradient(135deg, rgba(252, 209, 22, 0.1), rgba(255, 215, 0, 0.1));
+        border: 2px solid var(--tz-yellow);
+    }
+
+    .group-letter-waiting {
+        background: linear-gradient(135deg, rgba(248, 249, 250, 0.8), rgba(233, 236, 239, 0.8));
+        border: 1px solid #dee2e6;
+    }
+
+    /* Auto-expand on hover for desktop */
+    @media (min-width: 769px) {
+        .sidebar-tz:not(.expanded):hover {
+            width: 250px;
+        }
+        
+        .sidebar-tz:not(.expanded):hover ~ .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+        }
+        
+        .sidebar-tz:not(.expanded):hover .sidebar-text {
+            opacity: 1;
+            width: auto;
+            margin-left: 0.5rem;
+        }
+    }
+</style>
+
+<!-- Sidebar -->
+<nav class="sidebar-tz" id="sidebar">
+    <div class="sidebar-header">
+        <button class="sidebar-toggle-btn" id="sidebarToggle">
+            <i class="fas fa-bars" id="toggleIcon"></i>
+        </button>
+    </div>
+
+    <ul class="sidebar-menu">
+        <li class="sidebar-item">
+            <a href="{% url 'select_region' %}" class="sidebar-link">
+                <i class="fas fa-paper-plane"></i>
+                <span class="sidebar-text">Submit Application</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="{% url 'submit_logbook' %}" class="sidebar-link">
+                <i class="fas fa-book-medical"></i>
+                <span class="sidebar-text">Write Logbook</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="{% url 'logbook_history' %}" class="sidebar-link">
+                <i class="fas fa-history"></i>
+                <span class="sidebar-text">History</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="{% url 'logbook_download_options' %}" class="sidebar-link">
+                <i class="fas fa-download"></i>
+                <span class="sidebar-text">Download</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<!-- Main Content -->
+<div class="main-content" id="mainContent">
+    <div class="container-fluid py-3">
+        <!-- Header Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="premium-card p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="welcome-title text-dark mb-2">
+                                Karibu, {{ student.full_name|default:user.email }}! 🇹🇿
+                            </h1>
+                            <p class="normal-text text-muted mb-3">
+                                Professional Teaching Practice Platform - Fulfill Your Teaching Dreams
+                            </p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge tz-badge px-3 py-2">
+                                    <i class="fas fa-user-graduate me-1"></i>
+                                    {{ student.approval_status|default:"Pending"|title }}
+                                </span>
+                                {% if student.selected_school %}
+                                <span class="badge bg-light text-dark border px-3 py-2">
+                                    <i class="fas fa-school me-1"></i>
+                                    {{ student.selected_school.name }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center d-none d-md-block">
+                            <div class="floating-tz">
+                                <i class="fas fa-graduation-cap fa-4x text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-tz p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="tz-icon p-2 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-file-alt fa-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1 normal-text">{{ applications|length }}</h4>
+                            <p class="text-muted mb-0 small-text">Applications</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-tz p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="tz-icon p-2 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-check-circle fa-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1 normal-text">{{ approved_applications_count }}</h4>
+                            <p class="text-muted mb-0 small-text">Approved</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-tz p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="tz-icon p-2 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-clock fa-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1 normal-text">{{ pending_applications_count }}</h4>
+                            <p class="text-muted mb-0 small-text">Pending</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-tz p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="tz-icon p-2 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-book fa-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1 normal-text">{{ logbook_entries|length }}</h4>
+                            <p class="text-muted mb-0 small-text">Logbook Entries</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="row g-3">
+            <!-- Left Column - Applications & Downloads -->
+            <div class="col-lg-8">
+                <!-- Applications Section -->
+                <div class="premium-card p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="section-title tz-gradient-text m-0">
+                            <i class="fas fa-tasks me-2"></i>My Subject Applications
+                        </h3>
+                        <span class="badge tz-badge px-2 py-1">{{ applications|length }}</span>
+                    </div>
+
+                    {% if applications %}
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="border-0 small-text">Subject</th>
+                                    <th class="border-0 small-text">School</th>
+                                    <th class="border-0 small-text">Status</th>
+                                    <th class="border-0 small-text">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in applications %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="tz-icon p-1 me-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                                <i class="fas fa-book small-text"></i>
+                                            </div>
+                                            <div>
+                                                <strong class="normal-text">{{ application.subject.name }}</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="small-text text-muted">{{ application.school.name }}</td>
+                                    <td>
+                                        {% if application.status == 'approved' %}
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-2 py-1 small-text">
+                                                <span class="status-dot-tz status-approved-tz"></span>
+                                                Approved
+                                            </span>
+                                        {% elif application.status == 'rejected' %}
+                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill px-2 py-1 small-text">
+                                                <span class="status-dot-tz status-rejected-tz"></span>
+                                                Rejected
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning rounded-pill px-2 py-1 small-text">
+                                                <span class="status-dot-tz status-pending-tz"></span>
+                                                Pending
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small-text text-muted">{{ application.application_date|date:"d/m/Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="tz-icon p-3 mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                        <h5 class="text-dark mb-2 normal-text">No Applications Yet</h5>
+                        <p class="text-muted mb-3 small-text">Start your teaching journey by submitting subject applications</p>
+                        <a href="{% url 'select_region' %}" class="tz-btn px-4 py-2 normal-text">
+                            <i class="fas fa-plus me-2"></i>Submit Application
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Download Section -->
+                <div class="premium-card p-3">
+                    <h3 class="section-title tz-gradient-text mb-3">
+                        <i class="fas fa-download me-2"></i>Download Confirmation Letters
+                    </h3>
+                    <div class="row g-3">
+                        <!-- Individual Letter -->
+                        <div class="col-md-6">
+                            <div class="premium-card p-3 h-100 text-center">
+                                <div class="tz-icon p-3 mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <h6 class="card-title text-dark mb-2">Individual Letter</h6>
+                                <p class="text-muted small-text mb-3">
+                                    Your personal teaching practice confirmation letter
+                                </p>
+                                {% if has_approved_applications %}
+                                <a href="{% url 'download_individual_letter' %}" class="tz-btn w-100 py-2 small-text">
+                                    <i class="fas fa-download me-2"></i>Download Now
+                                </a>
+                                {% else %}
+                                <button class="btn btn-light w-100 py-2 opacity-50 small-text" disabled>
+                                    <i class="fas fa-clock me-2"></i>Unavailable
+                                </button>
+                                <small class="text-muted mt-1 small-text">Requires approved applications</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Group Letter -->
+                        <div class="col-md-6">
+                            <div class="premium-card p-3 h-100 text-center {% if can_download_group_letter %}group-letter-ready{% else %}group-letter-waiting{% endif %}">
+                                <div class="tz-icon p-3 mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <h6 class="card-title text-dark mb-2">Group Letter</h6>
+                                <p class="text-muted small-text mb-3">
+                                    Group confirmation letter when school reaches <strong>{{ group_letter_quota }} approved students</strong>
+                                </p>
+                                
+                                {% if can_download_group_letter %}
+                                    <a href="{% url 'download_group_letter' %}" class="tz-btn tz-btn-gold w-100 py-2 small-text">
+                                        <i class="fas fa-download me-2"></i>Download Group Letter
+                                    </a>
+                                    <small class="text-success mt-1 d-block small-text">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        Ready! {{ approved_students_count }}/{{ group_letter_quota }} students approved
+                                    </small>
+                                {% else %}
+                                    <button class="btn btn-light w-100 py-2 opacity-50 small-text" disabled>
+                                        <i class="fas fa-clock me-2"></i>Not Available
+                                    </button>
+                                    {% if student.selected_school %}
+                                        <small class="text-muted mt-1 d-block small-text">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Progress: {{ approved_students_count }}/{{ group_letter_quota }} students
+                                        </small>
+                                        {% if approved_students_count < group_letter_quota %}
+                                        <small class="text-warning mt-1 d-block small-text">
+                                            <i class="fas fa-users me-1"></i>
+                                            Need {{ group_letter_quota|add:"-approved_students_count" }} more students
+                                        </small>
+                                        {% endif %}
+                                    {% else %}
+                                        <small class="text-muted mt-1 d-block small-text">
+                                            <i class="fas fa-school me-1"></i>
+                                            No school selected
+                                        </small>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - School Info & Quick Actions -->
+            <div class="col-lg-4">
+                <!-- School Information -->
+                <div class="premium-card p-3 mb-3">
+                    <h3 class="section-title tz-gradient-text mb-3">
+                        <i class="fas fa-school me-2"></i>School Information
+                    </h3>
+
+                    {% if student.selected_school %}
+                    <div class="text-center mb-3">
+                        <div class="tz-icon p-3 mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-school"></i>
+                        </div>
+                        <h5 class="card-title text-dark mb-1">{{ student.selected_school.name }}</h5>
+                        <p class="text-muted small-text">{{ student.selected_school.district.name }}, {{ student.selected_school.district.region.name }}</p>
+                        
+                        <!-- Group Letter Progress -->
+                        <div class="mt-2 p-2 rounded" style="background: rgba(30, 181, 58, 0.05);">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="fw-bold text-dark normal-text">{{ approved_students_count }}</div>
+                                    <div class="text-muted small-text">Approved</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fw-bold text-dark normal-text">{{ group_letter_quota }}</div>
+                                    <div class="text-muted small-text">Required</div>
+                                </div>
+                            </div>
+                            {% if school_has_completed_quota %}
+                            <div class="mt-1">
+                                <span class="badge bg-success small-text">
+                                    <i class="fas fa-check me-1"></i>Group Ready
+                                </span>
+                            </div>
+                            {% else %}
+                            <div class="mt-1">
+                                <span class="badge bg-warning small-text">
+                                    <i class="fas fa-clock me-1"></i>Waiting for Group
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small-text">Group Progress</span>
+                            <span class="text-muted small-text fw-bold">{% widthratio approved_students_count group_letter_quota 100 %}%</span>
+                        </div>
+                        <div class="progress-tz">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {% widthratio approved_students_count group_letter_quota 100 %}%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a href="{% url 'select_subjects' student.selected_school.id %}" class="btn btn-outline-primary w-100 py-2 small-text">
+                                <i class="fas fa-edit me-1"></i>Manage Subjects
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'select_region' %}" class="btn btn-outline-secondary w-100 py-2 small-text">
+                                <i class="fas fa-exchange-alt me-1"></i>Change School
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <div class="tz-icon p-3 mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-school"></i>
+                        </div>
+                        <h5 class="text-dark mb-2 normal-text">No School Selected</h5>
+                        <p class="text-muted mb-3 small-text">Choose a school to start your teaching journey</p>
+                        <a href="{% url 'select_region' %}" class="tz-btn px-3 py-2 small-text">
+                            <i class="fas fa-map-marker-alt me-2"></i>Choose School
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="premium-card p-3 mb-3">
+                    <h3 class="section-title tz-gradient-text mb-3">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h3>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a href="{% url 'select_region' %}" class="premium-card p-2 text-center text-decoration-none d-block">
+                                <i class="fas fa-plus-circle fa-lg text-primary mb-1"></i>
+                                <div class="text-dark fw-bold small-text">Submit Application</div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'submit_logbook' %}" class="premium-card p-2 text-center text-decoration-none d-block">
+                                <i class="fas fa-book-medical fa-lg text-primary mb-1"></i>
+                                <div class="text-dark fw-bold small-text">Write Logbook</div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'logbook_history' %}" class="premium-card p-2 text-center text-decoration-none d-block">
+                                <i class="fas fa-history fa-lg text-primary mb-1"></i>
+                                <div class="text-dark fw-bold small-text">History</div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'logbook_download_options' %}" class="premium-card p-2 text-center text-decoration-none d-block">
+                                <i class="fas fa-download fa-lg text-primary mb-1"></i>
+                                <div class="text-dark fw-bold small-text">Download</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Logbook -->
+                <div class="premium-card p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="section-title tz-gradient-text m-0">
+                            <i class="fas fa-book-open me-2"></i>Recent Logbook
+                        </h3>
+                        <a href="{% url 'submit_logbook' %}" class="tz-btn btn-sm px-3 py-1 small-text">
+                            <i class="fas fa-plus me-1"></i>New
+                        </a>
+                    </div>
+
+                    {% if logbook_entries %}
+                    <div>
+                        {% for entry in logbook_entries|slice:":3" %}
+                        <div class="premium-card p-2 mb-2">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <span class="fw-bold text-dark small-text">{{ entry.date|date:"d/m/Y" }}</span>
+                                <span class="badge {% if entry.is_location_verified %}bg-success{% else %}bg-warning{% endif %} bg-opacity-10 text-{% if entry.is_location_verified %}success{% else %}warning{% endif %} border border-{% if entry.is_location_verified %}success{% else %}warning{% endif %} rounded-pill small-text">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    {% if entry.is_location_verified %}Verified{% else %}Pending{% endif %}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small-text mb-1">
+                                <span>{{ entry.get_day_of_week_display }}</span>
+                                {% if entry.morning_check_in %}
+                                <span>{{ entry.morning_check_in|date:"H:i" }}</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-muted small-text mb-0">
+                                {% if entry.morning_activity %}
+                                    {{ entry.morning_activity|truncatewords:6 }}
+                                {% else %}
+                                    No activities recorded...
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <div class="tz-icon p-2 mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <p class="text-muted mb-2 small-text">No logbook entries yet</p>
+                        <a href="{% url 'submit_logbook' %}" class="tz-btn btn-sm px-3 py-1 small-text">
+                            <i class="fas fa-plus me-2"></i>Create Entry
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const toggleIcon = document.getElementById('toggleIcon');
+        
+        // Check if sidebar state is saved
+        const isExpanded = localStorage.getItem('sidebarExpanded') === 'true';
+        
+        if (isExpanded) {
+            expandSidebar();
+        }
+        
+        // Toggle sidebar on button click
+        sidebarToggle.addEventListener('click', function() {
+            if (sidebar.classList.contains('expanded')) {
+                collapseSidebar();
+                localStorage.setItem('sidebarExpanded', 'false');
+            } else {
+                expandSidebar();
+                localStorage.setItem('sidebarExpanded', 'true');
+            }
+        });
+        
+        // Auto-expand on hover (for desktop only)
+        if (window.innerWidth > 768) {
+            sidebar.addEventListener('mouseenter', function() {
+                if (!sidebar.classList.contains('expanded')) {
+                    expandSidebar();
+                }
+            });
+            
+            sidebar.addEventListener('mouseleave', function() {
+                if (sidebar.classList.contains('expanded') && localStorage.getItem('sidebarExpanded') !== 'true') {
+                    collapseSidebar();
+                }
+            });
+        }
+        
+        function collapseSidebar() {
+            sidebar.classList.remove('expanded');
+            mainContent.classList.remove('expanded');
+            toggleIcon.classList.remove('fa-times');
+            toggleIcon.classList.add('fa-bars');
+        }
+        
+        function expandSidebar() {
+            sidebar.classList.add('expanded');
+            mainContent.classList.add('expanded');
+            toggleIcon.classList.remove('fa-bars');
+            toggleIcon.classList.add('fa-times');
+        }
+        
+        // Auto-refresh every 45 seconds
+        setInterval(() => {
+            window.location.reload();
+        }, 45000);
+        
+        // Add smooth animations to cards
+        const cards = document.querySelectorAll('.premium-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Show notification if group letter is ready
+        {% if can_download_group_letter %}
+        setTimeout(() => {
+            if (!localStorage.getItem('groupLetterNotified')) {
+                alert('🎉 CONGRATULATIONS! Your school now has 5 approved students. You can download the Group Letter!');
+                localStorage.setItem('groupLetterNotified', 'true');
+            }
+        }, 1000);
+        {% endif %}
+    });
+</script>
+{% endblock %}

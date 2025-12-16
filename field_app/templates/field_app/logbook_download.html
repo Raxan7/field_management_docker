@@ -1,0 +1,98 @@
+{% extends 'field_app/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-download"></i>
+                        Pakua Logbook yako
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h1 class="display-4 text-primary">{{ total_entries }}</h1>
+                                    <p class="card-text">Jumla ya Maingizo</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h1 class="display-4 text-success">{{ this_week_entries }}</h1>
+                                    <p class="card-text">Maingizo ya Wiki Hii</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-calendar-day fa-3x text-primary mb-3"></i>
+                                    <h5>Logbook ya Leo</h5>
+                                    <p>Pakua logbook ya leo tu</p>
+                                    <a href="{% url 'download_logbook_pdf' 'today' %}" class="btn btn-primary">
+                                        <i class="fas fa-download"></i> Pakua Leo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-calendar-week fa-3x text-success mb-3"></i>
+                                    <h5>Logbook ya Wiki</h5>
+                                    <p>Pakua logbook ya wiki hii</p>
+                                    <a href="{% url 'download_logbook_pdf' 'week' %}" class="btn btn-success">
+                                        <i class="fas fa-download"></i> Pakua Wiki
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-calendar-alt fa-3x text-warning mb-3"></i>
+                                    <h5>Logbook ya Mwezi</h5>
+                                    <p>Pakua logbook ya mwezi huu</p>
+                                    <a href="{% url 'download_logbook_pdf' 'month' %}" class="btn btn-warning">
+                                        <i class="fas fa-download"></i> Pakua Mwezi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-archive fa-3x text-info mb-3"></i>
+                                    <h5>Logbook Zote</h5>
+                                    <p>Pakua logbook zote ulizojaza</p>
+                                    <a href="{% url 'download_logbook_pdf' 'all' %}" class="btn btn-info">
+                                        <i class="fas fa-download"></i> Pakua Zote
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'logbook_history' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Rudi kwenye Historia
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
